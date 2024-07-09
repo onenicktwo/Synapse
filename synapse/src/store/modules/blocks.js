@@ -1,18 +1,33 @@
 const state = {
-  // Your state here
-}
+  blocks: [
+    {
+      id: 'print',
+      type: 'output',
+      label: 'Print',
+      color: '#4CAF50',
+      inputs: [
+        {
+          name: 'message',
+          type: 'string',
+          default: ''
+        }
+      ]
+    }
+  ]
+};
 
 const mutations = {
-  // Your mutations here
-}
+  // We'll add mutations later if needed
+};
 
 const actions = {
-  // Your actions here
-}
+  // We'll add actions later if needed
+};
 
 const getters = {
-  // Your getters here
-}
+  getAllBlocks: (state) => state.blocks,
+  getBlockById: (state) => (id) => state.blocks.find(block => block.id === id)
+};
 
 export default {
   namespaced: true,
@@ -20,4 +35,4 @@ export default {
   mutations,
   actions,
   getters
-}
+};
