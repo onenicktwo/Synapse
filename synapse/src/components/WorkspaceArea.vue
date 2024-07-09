@@ -68,7 +68,7 @@ export default {
 .workspace-area {
   flex-grow: 1;
   padding: 10px;
-  background-color: #ffffff;
+  background-color: #eeeeee;
   min-height: 300px;
 }
 
@@ -78,4 +78,5 @@ export default {
   padding: 10px;
   position: relative;
 }
+
 </style>

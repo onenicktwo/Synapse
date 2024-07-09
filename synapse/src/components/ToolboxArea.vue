@@ -44,6 +44,8 @@ export default {
 </script>
 
 <style scoped>
+/* src/components/styling/toolbox-area.css */
+
 .toolbox-area {
   padding: 10px;
   background-color: #f0f0f0;
@@ -53,7 +55,38 @@ export default {
   overflow-y: auto;
 }
 
-.toolbox-item {
+.toolbox-title {
+  font-size: 1.2em;
+  font-weight: bold;
   margin-bottom: 10px;
 }
+
+.toolbox-item {
+  margin-bottom: 10px;
+  cursor: pointer;
+  padding: 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.toolbox-item:hover {
+  background-color: #f0f0f0;
+}
+
+.toolbox-item h3 {
+  margin: 0;
+  font-size: 1em;
+}
+
+.toolbox-item p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.toolbox-item.selected {
+  background-color: #e0e0e0;
+}
+
 </style>

@@ -1,0 +1,279 @@
+/* Base styles */
+html,
+body {
+    display: block;
+    margin: 0;
+    background-color: #855cd6;
+    padding: 0;
+    color: #575e75;
+    font-family: "Helvetica Neue", "Helvetica", Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4 {
+    margin: 0;
+    border: 0;
+    padding: 0;
+    color: #575e75;
+    font-weight: bold;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.4rem;
+}
+
+h4 {
+    font-size: 1rem;
+}
+
+h5 {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+p.legal {
+    font-size: 0.8rem;
+}
+
+p.intro {
+    font-size: 1.1rem;
+}
+
+p.callout {
+    margin: 1.5em 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 1.25em;
+}
+
+p.callout.orange {
+    background-color: rgba(244, 157, 37, 0.1);
+}
+
+p a {
+    white-space: nowrap;
+}
+
+b,
+strong {
+    font-weight: bold;
+}
+
+a {
+    cursor: pointer;
+    color: #855cd6;
+    font-weight: bold;
+}
+
+a:link,
+a:visited,
+a:active {
+    text-decoration: none;
+    color: #855cd6;
+}
+
+a:hover {
+    text-decoration: none;
+    color: #7854c0;
+}
+
+.empty {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    background-color: rgba(77, 151, 255, 0.1);
+    padding: 10px;
+    text-align: center;
+    line-height: 2rem;
+    color: #575e75;
+}
+
+.empty h4 {
+    color: #575e75;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p {
+    line-height: 1.7em;
+}
+
+p {
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+/* Input and outline */
+input {
+    outline-color: #855cd6;
+}
+
+::selection {
+    background-color: rgba(77, 151, 255, 0.25);
+}
+
+/* List styles */
+ol,
+ul {
+    padding-left: 20px;
+    line-height: 1.5em;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+ol li,
+ul li {
+    margin: 0.75em 0;
+}
+
+/* Definition list styles */
+dl {
+    line-height: 1.5rem;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+dl dt {
+    font-weight: bold;
+}
+
+dl dd {
+    margin: 0;
+}
+
+/* View container */
+#view {
+    display: inline-block;
+    margin-top: 50px;
+    background-color: #fcfcfc;
+    padding: 20px 0;
+    min-width: 100%;
+    min-height: 680px;
+}
+
+/* Dropdown styles */
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 5px 5px;
+    background-color: #855cd6;
+    padding: 10px;
+    min-width: 9rem;
+    max-width: 16.25rem;
+    overflow: visible;
+    color: #fff;
+    font-size: 0.8125rem;
+    font-weight: normal;
+}
+
+.dropdown.open {
+    display: block;
+}
+
+.dropdown a:link,
+.dropdown a:visited,
+.dropdown a:active {
+    background-color: rgba(0, 0, 0, 0);
+    color: #fff;
+}
+
+.dropdown input {
+    margin-bottom: 12px;
+    width: calc(100% - 30px);
+}
+
+.dropdown label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.dropdown > li {
+    display: block;
+    line-height: 30px;
+}
+
+.dropdown > li.divider {
+    margin-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.dropdown > li a {
+    display: block;
+    padding: 0 10px;
+}
+
+.dropdown > li a:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.dropdown.with-arrow {
+    margin-top: 14px;
+    border-radius: 5px;
+    overflow: visible;
+}
+
+.dropdown.with-arrow:before {
+    display: block;
+    position: absolute;
+    top: -7px;
+    right: 10%;
+    transform: rotate(45deg);
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    background-color: #855cd6;
+    width: 14px;
+    height: 14px;
+    content: "";
+}
+
+/* Studio status icon spinner */
+.studio-status-icon-spinner {
+    animation-name: intro, spin;
+    animation-duration: 0.25s, 1s;
+    animation-timing-function: cubic-bezier(0.3, -3, 0.6, 3), cubic-bezier(0.4, 0.1, 0.4, 1);
+    animation-delay: 0s, 0.25s;
+    animation-iteration-count: 1, infinite;
+    animation-direction: normal;
+    width: 1.4rem;
+    height: 1.4rem;
+    transform-origin: center;
+}
+/*
+@keyframes intro {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+

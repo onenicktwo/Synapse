@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>Visual Programming Environment</h1>
+    <HeadingArea />
     <div class="main-container">
       <toolbox-area />
       <workspace-area />
@@ -9,12 +9,15 @@
 </template>
 
 <script>
+import HeadingArea from '@/components/HeadingArea.vue';
+
 import ToolboxArea from './components/ToolboxArea.vue'
 import WorkspaceArea from './components/WorkspaceArea.vue'
 
 export default {
   name: 'App',
   components: {
+    HeadingArea,
     ToolboxArea,
     WorkspaceArea
   }
@@ -28,8 +31,12 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   color: #2c3e50;
   height: 100vh;
+  
 }
-
+.body
+{
+  color:grey;
+}
 .main-container {
   display: flex;
   height: 100%;
