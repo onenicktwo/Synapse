@@ -1,4 +1,4 @@
-<template>
+//<template>
   <div class="home-view">
     <div class="workspace-container">
       <Toolbox />
@@ -39,6 +39,6 @@ export default {
 }
 .body
 {
-  color:rgb(129, 0, 0);
+  color:grey;
 }
 </style>

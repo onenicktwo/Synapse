@@ -1,22 +1,24 @@
-<!-- src/components/WorkspaceArea.vue -->
-
 <template>
   <div 
     class="workspace-area"
     @dragover.prevent
     @drop="onDrop"
   >
-    <h2>Workspace</h2>
-    <div class="workspace-content">
-      <component 
-        v-for="block in workspaceBlocks" 
-        :key="block.id" 
-        :is="getBlockComponent(block.type)"
-        :block="block"
-        :isInWorkspace="true"
-        @remove="removeBlock(block.id)"
-        @update="updateBlock"
-      />
+    <div class="card mb-4">
+      <div class="card-header custom-card-header text-white">
+        <h2 class="h4">Workspace</h2>
+      </div>
+      <div class="card-body workspace-content">
+        <component 
+          v-for="block in workspaceBlocks" 
+          :key="block.id" 
+          :is="getBlockComponent(block.type)"
+          :block="block"
+          :isInWorkspace="true"
+          @remove="removeBlock(block.id)"
+          @update="updateBlock"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -68,15 +70,47 @@ export default {
 .workspace-area {
   flex-grow: 1;
   padding: 10px;
-  background-color: #eeeeee;
+  background: linear-gradient(to bottom right, #e0c3fc, #8ec5fc);
   min-height: 300px;
 }
 
 .workspace-content {
   min-height: 300px;
-  border: 2px dashed #7e57c2;
+  border: 3px solid #ffffff;
   padding: 10px;
   position: relative;
+  background: linear-gradient(to bottom right, #e0c3fc, #8ec5fc);
+  border-radius: 0.25rem;
+}
+
+.card {
+  background: linear-gradient(to bottom right, #e0c3fc, #8ec5fc);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-card-header {
+  background: #b39ddb; /* Light purple color */
+}
+
+h2 {
+  margin: 0;
+}
+
+.h4{
+  font-family: 'Roboto Slab', serif;
+  font-size: 2rem;
+  color: #ffffff !important;
+  text-shadow: 2px 2px 0 #b367a2, 4px 4px 0 #3d009e;
+  letter-spacing: 2px;
+  transform: rotate(-2deg);
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin-right: auto;
 }
 
 </style>
