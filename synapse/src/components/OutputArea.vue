@@ -2,17 +2,22 @@
     This component displays the output of the program when it's run. It could show print statements, error messages, or other program results.
 -->
 <template>
-    <div class="output-area">
-      <h2>Output</h2>
-      <!-- Add output display here -->
-    </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Output-Area'
+  <div class="output-area">
+    {{ output }} 
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'OutputArea',
+  props: {
+    output: {
+      type: String,
+      default: ''
+    }
   }
-  </script>
+};
+</script>
   
   <style scoped>
   .output-area {
