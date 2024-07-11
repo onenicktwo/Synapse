@@ -18,29 +18,34 @@ export default {
 
 <style scoped>
 .heading {
-  background-color: #7e57c2;
+  background-color: #eeeeee;
   padding: 10px 0; 
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); 
-  max-height: fit-content; /* Allow the heading to adjust to content */
+  max-height: fit-content;
 }
 
 .navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  max-width: 95%; 
+  padding: 10px 20px;
+  max-width: 95%;
+  margin: 0 auto;
+  border: 2px solid #9575cd; 
+  border-radius: 10px; 
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+  background-color: #673ab7; 
 }
 
 .nav-links {
-  font-family: 'Bangers', cursive;
+  font-family: 'Roboto', sans-serif; /* More professional font */
   font-size: 1rem; 
   color: #ffffff; 
   text-shadow: 2px 2px 0 #b367a2, 
                4px 4px 0 #3d009e; 
   letter-spacing: 1px; 
   transform: rotate(-3deg); 
-  margin: 5px 0; /* Simplified margin */
+  margin-right: 20px;
 }
 
 .nav-links router-link {
@@ -56,12 +61,16 @@ export default {
 }
 
 .synapse-title {
-  font-family: 'Bangers', cursive;
-  font-size: 1.8rem; /* Reduced font size */
+  font-family: 'Roboto Slab', serif; /* Professional and bold font */
+  font-size: 2.5rem; /* Increased font size */
   color: #ffffff; 
   text-shadow: 2px 2px 0 #b367a2,
                4px 4px 0 #3d009e; 
-  letter-spacing: 1px; /* Reduced letter spacing */
-  margin: 5px 0; /* Simplified margin */
+  letter-spacing: 2px; /* Increased letter spacing */
+  margin: 5px 100px;
+  flex-grow: 1; 
+  text-align: center; 
+  transform: rotate(-2deg); 
+  display: inline-block; 
 }
 </style>

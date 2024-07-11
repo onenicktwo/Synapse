@@ -74,7 +74,7 @@ export default {
 
 .workspace-content {
   min-height: 300px;
-  border: 2px dashed #ccc;
+  border: 2px dashed #7e57c2;
   padding: 10px;
   position: relative;
 }

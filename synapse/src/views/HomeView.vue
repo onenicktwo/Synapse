@@ -29,10 +29,7 @@ export default {
 </script>
 
 <style scoped>
-.home-view {
-  background-color: #f0f0f0;
-  padding: 20px;
-}
+
 
 .workspace-container {
   display: flex;
@@ -42,6 +39,6 @@ export default {
 }
 .body
 {
-  color:grey;
+  color:rgb(129, 0, 0);
 }
 </style>
