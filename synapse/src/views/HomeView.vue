@@ -1,4 +1,4 @@
-<template>
+//<template>
   <div class="home-view">
     <div class="workspace-container">
       <Toolbox />
@@ -29,10 +29,7 @@ export default {
 </script>
 
 <style scoped>
-.home-view {
-  background-color: #f0f0f0;
-  padding: 20px;
-}
+
 
 .workspace-container {
   display: flex;
