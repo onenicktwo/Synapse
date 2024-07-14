@@ -1,44 +1,18 @@
-//<template>
-  <div class="home-view">
-    <div class="workspace-container">
-      <Toolbox />
-      <Workspace />
-      <CodeView />
-      <OutputArea />
-    </div>
+<template>
+  <div class="home">
+    <img alt="Vue logo" src="../assets/logo.png">
+    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
   </div>
 </template>
 
-<script>
-import '../components/styling/app.css';
+<script lang="ts">
+import { defineComponent } from 'vue';
+import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
 
-import Toolbox from '@/components/ToolboxArea.vue';
-import Workspace from '@/components/WorkspaceArea.vue';
-import CodeView from '@/components/CodeView.vue';
-import OutputArea from '@/components/OutputArea.vue';
-
-export default {
+export default defineComponent({
   name: 'HomeView',
   components: {
-    Toolbox,
-    Workspace,
-    CodeView,
-    OutputArea
-  }
-}
+    HelloWorld,
+  },
+});
 </script>
-
-<style scoped>
-
-
-.workspace-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 20px;
-}
-.body
-{
-  color:grey;
-}
-</style>

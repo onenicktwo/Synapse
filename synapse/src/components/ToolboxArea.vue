@@ -1,5 +1,3 @@
-<!-- src/components/ToolboxArea.vue -->
-
 <template>
   <div class="toolbox-area">
     <div class="card mb-4">
@@ -19,25 +17,27 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { mapGetters } from 'vuex';
 import PrintBlock from './blocks/PrintBlock.vue';
+import { Block } from './blocks/types';
 
-export default {
+export default defineComponent({
   name: 'ToolboxArea',
   components: {
     PrintBlock
   },
   computed: {
     ...mapGetters('blocks', ['getAllBlocks']),
-    blocks() {
+    blocks(): Block[] {
       return this.getAllBlocks;
     }
   },
   methods: {
-    getBlockComponent(type) {
+    getBlockComponent(type: string): string | null {
       switch (type) {
-        case 'output':
+        case 'print':
           return 'PrintBlock';
         // Add more cases for other block types as you create them
         default:
@@ -46,7 +46,7 @@ export default {
       }
     }
   }
-};
+});
 </script>
 
 <style scoped>
@@ -56,9 +56,8 @@ export default {
   width: 250px;
   height: 100%;
   overflow-y: auto;
-  border-right: 3px solid #ffffff; /* Added right border */
-  box-shadow: 3px 0 5px rgba(0, 0, 0, 0.1); /* Optional: adds a shadow for depth */
-
+  border-right: 3px solid #ffffff;
+  box-shadow: 3px 0 5px rgba(0, 0, 0, 0.1);
 }
 
 .toolbox-content {
@@ -81,7 +80,7 @@ export default {
 }
 
 .custom-card-header {
-  background: #b39ddb; /* Light purple color */
+  background: #b39ddb;
 }
 
 .h4 {
@@ -95,6 +94,4 @@ export default {
   padding: 0.5rem 1rem;
   margin-right: auto;
 }
-
-
 </style>
