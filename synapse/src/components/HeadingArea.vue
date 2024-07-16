@@ -1,18 +1,18 @@
 <template>
   <div class="heading">
-    <b-navbar toggleable="lg" type="dark" variant="primary">
+    <b-navbar toggleable="lg" type="dark" variant="dark">
       <b-container class="header-container">
         <b-navbar-brand href="#" class="synapse-title">
           Synapse
         </b-navbar-brand>
-          <b-navbar-nav class="ml-auto">
-            <b-nav-item to="/settings" active-class="active-link">
-              <span class="nav-link-text">Settings</span>
-            </b-nav-item>
-            <b-nav-item to="/about" active-class="active-link">
-              <span class="nav-link-text">About</span>
-            </b-nav-item>
-          </b-navbar-nav>
+        <b-navbar-nav class="ml-auto">
+          <b-nav-item to="/settings" active-class="active-link">
+            <span class="nav-link-text">Settings</span>
+          </b-nav-item>
+          <b-nav-item to="/about" active-class="active-link">
+            <span class="nav-link-text">About</span>
+          </b-nav-item>
+        </b-navbar-nav>
       </b-container>
     </b-navbar>
   </div>
@@ -26,14 +26,11 @@ export default {
 
 <style scoped>
 .heading {
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  border-bottom: 3px solid #ffffff; /* Added right border */
-
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .navbar {
-  background: linear-gradient(45deg, #673ab7, #9c27b0) !important;
-  border-bottom: 2px solid #9575cd;
+  background-color: #343a40; /* Dark background for a modern look */
 }
 
 .header-container {
@@ -43,13 +40,9 @@ export default {
 
 .synapse-title {
   font-family: 'Roboto Slab', serif;
-  font-size: 2.5rem;
-  color: #ffffff !important;
-  text-shadow: 2px 2px 0 #b367a2, 4px 4px 0 #3d009e;
-  letter-spacing: 2px;
-  transform: rotate(-2deg);
-  display: inline-block;
-  padding: 0.5rem 1rem;
+  font-size: 2rem;
+  color: #ffffff;
+  letter-spacing: 1px;
   margin-right: auto;
 }
 
@@ -87,21 +80,18 @@ export default {
 }
 
 .navbar-nav .nav-item {
-  margin-left: 2rem;
+  margin-left: 1rem;
 }
 
 .nav-link-text {
-  font-size: 1.1rem;
-  color: #ffffff !important;
-  text-shadow: 1px 1px 0 #b367a2;
-  letter-spacing: 1px;
-  transition: all 0.3s ease;
+  font-size: 1rem;
+  color: #ffffff;
+  transition: color 0.3s ease;
 }
 
 .nav-link-text:hover,
 .active-link .nav-link-text {
-  transform: translateY(-2px);
-  text-shadow: 2px 2px 0 #b367a2;
+  color: #e0e0e0; /* Lighten text on hover */
 }
 
 @media (max-width: 991.98px) {
@@ -115,9 +105,7 @@ export default {
   }
 
   .synapse-title {
-    font-size: 2rem;
-    transform: rotate(0deg);
-    text-shadow: 1px 1px 0 #b367a2, 2px 2px 0 #3d009e;
+    font-size: 1.75rem;
   }
 }
 </style>

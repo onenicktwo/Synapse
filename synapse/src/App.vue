@@ -4,6 +4,7 @@
     <div class="main-container">
       <toolbox-area />
       <workspace-area />
+      <OutputArea />
     </div>
   </div>
 </template>
@@ -13,13 +14,15 @@ import HeadingArea from '@/components/HeadingArea.vue';
 
 import ToolboxArea from './components/ToolboxArea.vue'
 import WorkspaceArea from './components/WorkspaceArea.vue'
+import OutputArea from './components/OutputArea.vue';
 
 export default {
   name: 'App',
   components: {
     HeadingArea,
     ToolboxArea,
-    WorkspaceArea
+    WorkspaceArea,
+    OutputArea,
   }
 }
 </script>
