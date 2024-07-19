@@ -42,12 +42,13 @@ const state: BlocksState = {
         {
           name: 'value',
           type: 'number',
-          default: '0'  // This is a string '0', not a number 0
+          default: '0'  // Ensure this is a string '0' if needed,  ideally it should match the expected type
         }
       ]
     }
   ]
 };
+
 
 
 const mutations = {
