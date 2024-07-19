@@ -55,6 +55,8 @@ const getters = {
   getWorkspaceBlocks: (state: WorkspaceState): Block[] => state.blocks
 };
 
+
+
 export default {
   namespaced: true,
   state,

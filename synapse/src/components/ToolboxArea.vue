@@ -19,12 +19,14 @@
 import { defineComponent } from 'vue';
 import { mapGetters } from 'vuex';
 import PrintBlock from './blocks/PrintBlock.vue';
+import VariableBlock from './blocks/VariableBlock.vue';
 import { Block } from './blocks/types';
 
 export default defineComponent({
   name: 'ToolboxArea',
   components: {
-    PrintBlock
+    PrintBlock,
+    VariableBlock
   },
   computed: {
     ...mapGetters('blocks', ['getAllBlocks']),
@@ -37,6 +39,8 @@ export default defineComponent({
       switch (type) {
         case 'print':
           return 'PrintBlock';
+        case 'variable':
+          return 'VariableBlock';
         // Add more cases for other block types as you create them
         default:
           console.error(`Unknown block type: ${type}`);
@@ -73,5 +77,9 @@ export default defineComponent({
 .toolbox-content {
   min-height: 300px;
   padding: 1rem;
+}
+
+.toolbox-item {
+  margin-bottom: 1rem;
 }
 </style>
