@@ -21,17 +21,20 @@
     </div>
   </div>
 </template>
+
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { mapGetters, mapActions } from 'vuex';
 import PrintBlock from './blocks/PrintBlock.vue';
+import VariableBlock from './blocks/VariableBlock.vue';
 import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
 
 export default defineComponent({
   name: 'WorkspaceArea',
   components: {
-    PrintBlock
+    PrintBlock,
+    VariableBlock
   },
   data() {
     return {
@@ -51,6 +54,8 @@ export default defineComponent({
       switch (type) {
         case 'print':
           return 'PrintBlock';
+        case 'variable':
+          return 'VariableBlock';
         default:
           console.error(`Unknown block type: ${type}`);
           return null;
