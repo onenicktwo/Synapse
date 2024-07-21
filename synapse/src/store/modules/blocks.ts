@@ -32,6 +32,19 @@ const state: BlocksState = {
           default: ''
         }
       ]
+    },
+    {
+      id: 'ifThen',
+      type: 'ifThen',
+      label: 'If-Then',
+      color: '#e7a15c',
+      inputs: [
+        {
+          name: 'condition',
+          type: 'string',
+          default: ''
+        }
+      ]
     }
   ]
 };

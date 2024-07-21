@@ -20,3 +20,11 @@ export interface BlockInput {
     type: 'print';
     value: string;
   }
+
+  export interface IfThenBlock extends Block {
+    type: 'ifThen';
+    thenBlocks: BlockTypes[];
+  }
+  
+  
+  export type BlockTypes = PrintBlock | IfThenBlock;
