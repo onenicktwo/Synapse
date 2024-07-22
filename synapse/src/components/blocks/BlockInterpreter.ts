@@ -1,4 +1,4 @@
-import { Block } from './types';
+import { Block, IfThenBlock, PrintBlock } from './types';
 
 class BlockInterpreter {
   private output: string[] = [];
@@ -15,9 +15,12 @@ class BlockInterpreter {
     console.log('Executing block:', block);
     switch (block.type) {
       case 'print':
-        this.executePrintBlock(block);
+        this.executePrintBlock(block as PrintBlock); 
         break;
-      // Add more cases for other block types as you create them
+      case 'ifThen':
+        // Type Assertion to pass the block as IfThenBlock
+        this.executeIfThenBlock(block as IfThenBlock); 
+        break;
       default:
         console.error(`Unknown block type: ${block.type}`);
     }
@@ -29,6 +32,25 @@ class BlockInterpreter {
       this.output.push(String(value));
     } else {
       console.error('Print block has no inputs');
+    }
+  }
+
+  private executeIfThenBlock(block: IfThenBlock): void {
+    const conditionResult = true;
+    if (conditionResult && block.thenBlocks) {
+      for (const thenBlock of block.thenBlocks) {
+        this.executeBlock(thenBlock);
+      }
+    } 
+  }
+
+  private evaluateCondition(block: Block): boolean {
+    if (block.inputs && block.inputs.length > 0) {
+      const conditionValue = this.evaluateInput(block.inputs[0]);
+      return Boolean(conditionValue); // Convert the condition to a boolean
+    } else {
+      console.error('IfThen block has no condition input');
+      return false;
     }
   }
 

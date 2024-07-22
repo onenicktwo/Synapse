@@ -16,15 +16,12 @@ export interface BlockInput {
     };
   }
 
-  interface PrintBlock extends Block {
+  export interface PrintBlock extends Block {
     type: 'print';
     value: string;
   }
 
   export interface IfThenBlock extends Block {
     type: 'ifThen';
-    thenBlocks: BlockTypes[];
+    thenBlocks: Block[];
   }
-  
-  
-  export type BlockTypes = PrintBlock | IfThenBlock;
