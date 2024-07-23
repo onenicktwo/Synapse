@@ -28,6 +28,7 @@ import PrintBlock from './blocks/PrintBlock.vue';
 import IfThenBlock from './blocks/IfThenBlock.vue';
 import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
+import { getBlockComponent } from './blockUtils';
 
 export default defineComponent({
   name: 'WorkspaceArea',
@@ -49,17 +50,6 @@ export default defineComponent({
   methods: {
     ...mapActions('workspace', ['addBlock', 'removeBlock', 'updateBlock']),
     ...mapActions(['setOutput']),
-    getBlockComponent(type: string): string | null {
-      switch (type) {
-        case 'print':
-          return 'PrintBlock';
-        case 'ifThen':
-          return 'IfThenBlock';
-        default:
-          console.error(`Unknown block type: ${type}`);
-          return null;
-      }
-    },
     onDrop(event: DragEvent) {
       if (event.dataTransfer) {
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
@@ -77,8 +67,9 @@ export default defineComponent({
     executeBlocks() {
       const output = this.interpreter.execute(this.workspaceBlocks);
       this.setOutput(output);
-    }
-  }
+    },
+    getBlockComponent
+  },
 });
 </script>
 

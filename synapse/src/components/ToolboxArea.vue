@@ -21,6 +21,7 @@ import { mapGetters } from 'vuex';
 import PrintBlock from './blocks/PrintBlock.vue';
 import IfThenBlock from './blocks/IfThenBlock.vue';
 import { Block } from './blocks/types';
+import { getBlockComponent } from './blockUtils';
 
 export default defineComponent({
   name: 'ToolboxArea',
@@ -35,17 +36,7 @@ export default defineComponent({
     }
   },
   methods: {
-    getBlockComponent(type: string): string | null {
-      switch (type) {
-        case 'print':
-          return 'PrintBlock';
-        case 'ifThen':
-          return 'IfThenBlock';
-        default:
-          console.error(`Unknown block type: ${type}`);
-          return null;
-      }
-    }
+    getBlockComponent
   }
 });
 </script>
