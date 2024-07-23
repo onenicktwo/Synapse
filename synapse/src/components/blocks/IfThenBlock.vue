@@ -34,6 +34,7 @@
 import { defineComponent, PropType, ref } from 'vue';
 import { Block, IfThenBlock as IfThenBlockType } from './types';
 import IfThenBlockTemplate from './IfThenBlockTemplate.vue';
+import { getBlockComponent } from '../blockUtils';
 import PrintBlock from './PrintBlock.vue';
 
 export default defineComponent({
@@ -68,14 +69,6 @@ export default defineComponent({
         thenBlocks: thenBlocks.value
       };
       emit('update', updatedBlock);
-    };
-
-    const getBlockComponent = (type: string): string => {
-      switch (type) {
-        case 'print': return 'PrintBlock';
-        case 'ifThen': return 'IfThenBlock';
-        default: return 'UnknownBlock';
-      }
     };
 
     const removeNestedBlock = (id: string) => {

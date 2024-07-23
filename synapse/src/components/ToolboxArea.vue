@@ -24,6 +24,7 @@ import VariableBlock from './blocks/VariableBlock.vue';
 import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; 
 import ChangeVariableBlock from './blocks/ChangeVariableBlock.vue'; 
 import { Block } from './blocks/types';
+import { getBlockComponent } from './blockUtils';
 
 export default defineComponent({
   name: 'ToolboxArea',
@@ -41,23 +42,7 @@ export default defineComponent({
     }
   },
   methods: {
-    getBlockComponent(type: string): string | null {
-      switch (type) {
-        case 'print':
-          return 'PrintBlock';
-        case 'ifThen':
-          return 'IfThenBlock';
-        case 'variable':
-          return 'VariableBlock';
-        case 'createVariable':
-          return 'CreateVariableBlock'; // Add new block type
-        case 'changeVariable':
-          return 'ChangeVariableBlock'; // Add new block type
-        default:
-          console.error(`Unknown block type: ${type}`);
-          return null;
-      }
-    }
+    getBlockComponent
   }
 });
 </script>

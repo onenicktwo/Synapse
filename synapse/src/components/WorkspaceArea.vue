@@ -32,6 +32,7 @@ import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; // Import ad
 import ChangeVariableBlock from './blocks/ChangeVariableBlock.vue'; // Import additional blocks
 import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
+import { getBlockComponent } from './blockUtils';
 
 export default defineComponent({
   name: 'WorkspaceArea',
@@ -56,23 +57,7 @@ export default defineComponent({
   methods: {
     ...mapActions('workspace', ['addBlock', 'removeBlock', 'updateBlock']),
     ...mapActions(['setOutput']),
-    getBlockComponent(type: string): string | null {
-      switch (type) {
-        case 'print':
-          return 'PrintBlock';
-        case 'ifThen':
-          return 'IfThenBlock';
-        case 'variable':
-          return 'VariableBlock'; // Add additional block types
-        case 'createVariable':
-          return 'CreateVariableBlock'; // Add additional block types
-        case 'changeVariable':
-          return 'ChangeVariableBlock'; // Add additional block types
-        default:
-          console.error(`Unknown block type: ${type}`);
-          return null;
-      }
-    },
+
     onDrop(event: DragEvent) {
       if (event.dataTransfer) {
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
@@ -90,8 +75,9 @@ export default defineComponent({
     executeBlocks() {
       const output = this.interpreter.execute(this.workspaceBlocks);
       this.setOutput(output);
-    }
-  }
+    },
+    getBlockComponent
+  },
 });
 </script>
 
