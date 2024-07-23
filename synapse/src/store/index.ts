@@ -1,11 +1,11 @@
-import { createStore } from 'vuex'
-import blocks from './modules/blocks'
-import workspace from './modules/workspace'
+import { createStore } from 'vuex';
+import blocks from './modules/blocks';
+import workspace from './modules/workspace';
+import variables from './modules/variables';
 
 interface RootState {
   output: string[];
 }
-
 
 export default createStore({
   state: {
@@ -26,7 +26,7 @@ export default createStore({
   },
   modules: {
     blocks,
-    workspace
+    workspace,
+    variables
   }
 });
-

@@ -21,11 +21,15 @@
     </div>
   </div>
 </template>
+
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { mapGetters, mapActions } from 'vuex';
 import PrintBlock from './blocks/PrintBlock.vue';
 import IfThenBlock from './blocks/IfThenBlock.vue';
+import VariableBlock from './blocks/VariableBlock.vue'; // Import additional blocks
+import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; // Import additional blocks
+import ChangeVariableBlock from './blocks/ChangeVariableBlock.vue'; // Import additional blocks
 import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
 
@@ -33,7 +37,10 @@ export default defineComponent({
   name: 'WorkspaceArea',
   components: {
     PrintBlock,
-    IfThenBlock
+    IfThenBlock,
+    VariableBlock, // Register additional blocks
+    CreateVariableBlock, // Register additional blocks
+    ChangeVariableBlock, // Register additional blocks
   },
   data() {
     return {
@@ -55,6 +62,12 @@ export default defineComponent({
           return 'PrintBlock';
         case 'ifThen':
           return 'IfThenBlock';
+        case 'variable':
+          return 'VariableBlock'; // Add additional block types
+        case 'createVariable':
+          return 'CreateVariableBlock'; // Add additional block types
+        case 'changeVariable':
+          return 'ChangeVariableBlock'; // Add additional block types
         default:
           console.error(`Unknown block type: ${type}`);
           return null;

@@ -45,6 +45,55 @@ const state: BlocksState = {
           default: ''
         }
       ]
+    },
+    {
+      id: 'createVariable',
+      type: 'createVariable',
+      label: 'Create Variable',
+      color: '#FFD700',
+      inputs: [
+        {
+          name: 'name',
+          type: 'string',
+          default: ''
+        },
+        {
+          name: 'value',
+          type: 'number',
+          default: "0"
+        }
+      ]
+    },
+    {
+      id: 'changeVariable',
+      type: 'changeVariable',
+      label: 'Change Variable',
+      color: '#FFA500',
+      inputs: [
+        {
+          name: 'variable',
+          type: 'string',
+          default: ''
+        },
+        {
+          name: 'value',
+          type: 'number',
+          default: "0"
+        }
+      ]
+    },
+    {
+      id: 'variable',
+      type: 'variable',
+      label: 'Variable',
+      color: '#00BFFF',
+      inputs: [
+        {
+          name: 'variable',
+          type: 'string',
+          default: ''
+        }
+      ]
     }
   ]
 };
