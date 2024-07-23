@@ -1,5 +1,5 @@
 <template>
-  <base-block :block="block" :isInWorkspace="isInWorkspace" @remove="$emit('remove')">
+  <print-block-template :block="block" :isInWorkspace="isInWorkspace" @remove="$emit('remove')">
     <template #text-input>
       <div class="block-input">
         <input 
@@ -10,18 +10,18 @@
         >
       </div>
     </template>
-  </base-block>
+  </print-block-template>
 </template>
 
 <script lang="ts">
 import { defineComponent, PropType } from 'vue';
-import BaseBlock from './PrintBlockTemplate.vue';
+import PrintBlockTemplate from './PrintBlockTemplate.vue';
 import { Block } from './types';
 
 export default defineComponent({
   name: 'PrintBlock',
   components: {
-    BaseBlock
+    PrintBlockTemplate
   },
   props: {
     block: {

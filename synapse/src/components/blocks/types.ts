@@ -22,6 +22,7 @@ export interface BlockInput {
   }
 
   export interface IfThenBlock extends Block {
+    conditionBlock: null;
     type: 'ifThen';
     thenBlocks: Block[];
   }
