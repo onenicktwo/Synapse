@@ -3,7 +3,7 @@ import blocks from './modules/blocks';
 import workspace from './modules/workspace';
 import variables from './modules/variables';
 
-interface RootState {
+export interface RootState {
   output: string[];
 }
 

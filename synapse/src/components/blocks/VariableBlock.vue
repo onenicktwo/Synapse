@@ -1,5 +1,10 @@
 <template>
-    <div class="variable-block">
+    <div 
+      class="variable-block"
+      draggable="true"
+      @dragstart="onDragStart"
+      @dragend="onDragEnd"
+    >
       <select v-model="selectedVariable" @change="updateVariable">
         <option value="">Select a variable</option>
         <option v-for="variable in variables" :key="variable.id" :value="variable.id">
@@ -47,12 +52,25 @@
         }
       };
   
+      const onDragStart = (event: DragEvent) => {
+        if (event.dataTransfer) {
+          event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'variable', id: selectedVariable.value }));
+          event.dataTransfer.effectAllowed = 'copy';
+        }
+      };
+  
+      const onDragEnd = (event: DragEvent) => {
+        console.log('Drag ended at:', event.clientX, event.clientY);
+      };
+  
       return {
         selectedVariable,
         variables,
         selectedVariableValue,
         updateVariable,
         updateVariableValue,
+        onDragStart,
+        onDragEnd,
       };
     },
   });
@@ -65,6 +83,9 @@
     background-color: #ff8c1a;
     padding: 5px;
     border-radius: 5px;
+    cursor: move;
+    position: relative;
+    margin-bottom: 10px;
   }
   
   .variable-block select,
@@ -85,3 +106,4 @@
     width: 60px;
   }
   </style>
+  

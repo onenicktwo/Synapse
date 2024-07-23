@@ -53,14 +53,14 @@ const state: BlocksState = {
       color: '#FFD700',
       inputs: [
         {
-          name: 'name',
+          name: 'variable',
           type: 'string',
           default: ''
         },
         {
           name: 'value',
           type: 'number',
-          default: "0"
+          default: '0'
         }
       ]
     },
@@ -97,6 +97,7 @@ const state: BlocksState = {
     }
   ]
 };
+
 
 const mutations = {
   // We'll add mutations later if needed
