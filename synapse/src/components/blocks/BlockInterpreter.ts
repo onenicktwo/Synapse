@@ -1,4 +1,5 @@
-import { Block, IfThenBlock, PrintBlock } from './types';
+import { Block, IfThenBlock, PrintBlock, CreateVariableBlock } from './types';
+import store from '../../store'; // Import the Vuex store
 
 class BlockInterpreter {
   private output: string[] = [];
@@ -18,15 +19,17 @@ class BlockInterpreter {
         this.executePrintBlock(block as PrintBlock); 
         break;
       case 'ifThen':
-        // Type Assertion to pass the block as IfThenBlock
         this.executeIfThenBlock(block as IfThenBlock); 
+        break;
+      case 'createVariable':
+        this.executeCreateVariableBlock(block as CreateVariableBlock); 
         break;
       default:
         console.error(`Unknown block type: ${block.type}`);
     }
   }
 
-  private executePrintBlock(block: Block): void {
+  private executePrintBlock(block: PrintBlock): void {
     if (block.inputs && block.inputs.length > 0) {
       const value = this.evaluateInput(block.inputs[0]);
       this.output.push(String(value));
@@ -36,7 +39,7 @@ class BlockInterpreter {
   }
 
   private executeIfThenBlock(block: IfThenBlock): void {
-    const conditionResult = true;
+    const conditionResult = this.evaluateCondition(block);
     if (conditionResult && block.thenBlocks) {
       for (const thenBlock of block.thenBlocks) {
         this.executeBlock(thenBlock);
@@ -44,7 +47,19 @@ class BlockInterpreter {
     } 
   }
 
-  private evaluateCondition(block: Block): boolean {
+  private executeCreateVariableBlock(block: CreateVariableBlock): void {
+    const [nameInput, valueInput] = block.inputs;
+    const name = this.evaluateInput(nameInput);
+    const value = this.evaluateInput(valueInput);
+
+    if (typeof name === 'string' && typeof value === 'string') {
+      store.dispatch('variables/addVariable', { name, value });
+    } else {
+      console.error('CreateVariable block has invalid inputs');
+    }
+  }
+
+  private evaluateCondition(block: IfThenBlock): boolean {
     if (block.inputs && block.inputs.length > 0) {
       const conditionValue = this.evaluateInput(block.inputs[0]);
       return Boolean(conditionValue); // Convert the condition to a boolean
