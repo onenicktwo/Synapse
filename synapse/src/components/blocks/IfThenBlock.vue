@@ -41,7 +41,6 @@ import { defineComponent, PropType, ref } from 'vue';
 import { Block, IfThenBlock as IfThenBlockType } from './types';
 import IfThenBlockTemplate from './IfThenBlockTemplate.vue';
 import { getBlockComponent } from '../blockUtils';
-import ChangeVariableBlock from './ChangeVariableBlock.vue';
 import CreateVariableBlock from './CreateVariableBlock.vue';
 import PrintBlock from './PrintBlock.vue';
 import VariableBlock from './VariableBlock.vue';
@@ -50,7 +49,6 @@ export default defineComponent({
   name: 'IfThenBlock',
   components: {
     IfThenBlockTemplate,
-    ChangeVariableBlock,
     CreateVariableBlock,
     PrintBlock,
     VariableBlock
@@ -70,7 +68,7 @@ export default defineComponent({
     const conditionBlock = ref<Block | null>(props.block.conditionBlock || null);
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
     
-    const allowedNestedBlocks = ['print', 'ifThen', 'changeVariable', 'createVariable', 'variable'];
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable'];
     const allowedConditionBlocks = ['print'];
 
     const updateBlock = () => {
