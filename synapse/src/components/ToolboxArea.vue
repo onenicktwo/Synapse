@@ -22,7 +22,6 @@ import PrintBlock from './blocks/PrintBlock.vue';
 import IfThenBlock from './blocks/IfThenBlock.vue';
 import VariableBlock from './blocks/VariableBlock.vue';
 import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; 
-import ChangeVariableBlock from './blocks/ChangeVariableBlock.vue'; 
 import { Block } from './blocks/types';
 import { getBlockComponent } from './blockUtils';
 
@@ -32,8 +31,7 @@ export default defineComponent({
     PrintBlock,
     IfThenBlock,
     VariableBlock,
-    CreateVariableBlock, // Register new block components
-    ChangeVariableBlock // Register new block components
+    CreateVariableBlock,
   },
   computed: {
     ...mapGetters('blocks', ['getAllBlocks']),
