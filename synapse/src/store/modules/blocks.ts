@@ -41,8 +41,8 @@ const state: BlocksState = {
       inputs: [
         {
           name: 'condition',
-          type: 'string',
-          default: ''
+          type: 'Block',
+          default: 'null'
         }
       ]
     },

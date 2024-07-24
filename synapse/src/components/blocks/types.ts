@@ -23,7 +23,7 @@ export interface PrintBlock extends Block {
 
 export interface IfThenBlock extends Block {
   type: 'ifThen';
-  conditionBlocks: Block[];
+  conditionBlock: Block | null;
   thenBlocks: Block[];
 }
 

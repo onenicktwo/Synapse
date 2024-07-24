@@ -9,15 +9,15 @@
   >
     <template #condition-input>
       <component
-        v-for="conditionBlock in conditionBlocks"
+        v-if="conditionBlock"
         :key="conditionBlock.id"
         :is="getBlockComponent(conditionBlock.type)"
         :block="conditionBlock"
         :isInWorkspace="true"
-        @remove="removeConditionBlock(conditionBlock.id)"
+        @remove="removeConditionBlock"
         @update="updateConditionBlock"
         draggable="true"
-        @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, conditionBlock)"
+        @dragstart.stop="(event: DragEvent) => handleConditionDragStart(event)"
       />
     </template>
     <template #then-blocks>
@@ -41,17 +41,19 @@ import { defineComponent, PropType, ref } from 'vue';
 import { Block, IfThenBlock as IfThenBlockType } from './types';
 import IfThenBlockTemplate from './IfThenBlockTemplate.vue';
 import { getBlockComponent } from '../blockUtils';
-import PrintBlock from './PrintBlock.vue';
 import ChangeVariableBlock from './ChangeVariableBlock.vue';
 import CreateVariableBlock from './CreateVariableBlock.vue';
+import PrintBlock from './PrintBlock.vue';
+import VariableBlock from './VariableBlock.vue';
 
 export default defineComponent({
   name: 'IfThenBlock',
   components: {
     IfThenBlockTemplate,
-    PrintBlock,
     ChangeVariableBlock,
-    CreateVariableBlock
+    CreateVariableBlock,
+    PrintBlock,
+    VariableBlock
   },
   props: {
     block: {
@@ -65,23 +67,28 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
-    const conditionBlocks = ref<Block[]>(props.block.conditionBlocks || []);
+    const conditionBlock = ref<Block | null>(props.block.conditionBlock || null);
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
-
-    const allowedNestedBlocks = ['print', 'ifThen', 'changeVariable', 'createVariable'];
+    
+    const allowedNestedBlocks = ['print', 'ifThen', 'changeVariable', 'createVariable', 'variable'];
     const allowedConditionBlocks = ['print'];
 
     const updateBlock = () => {
       const updatedBlock: IfThenBlockType = {
         ...props.block,
-        conditionBlocks: conditionBlocks.value,
+        conditionBlock: conditionBlock.value,
         thenBlocks: thenBlocks.value
       };
       emit('update', updatedBlock);
     };
 
-    const removeConditionBlock = (id: string) => {
-      conditionBlocks.value = conditionBlocks.value.filter(block => block.id !== id);
+    const removeConditionBlock = () => {
+      conditionBlock.value = null;
+      updateBlock();
+    };
+
+    const updateConditionBlock = (updatedBlock: Block) => {
+      conditionBlock.value = updatedBlock;
       updateBlock();
     };
 
@@ -89,16 +96,6 @@ export default defineComponent({
       thenBlocks.value = thenBlocks.value.filter(block => block.id !== id);
       updateBlock();
     };
-
-
-    const updateConditionBlock = (updatedBlock: Block) => {
-      const index = conditionBlocks.value.findIndex(block => block.id === updatedBlock.id);
-      if (index !== -1) {
-        conditionBlocks.value[index] = updatedBlock;
-        updateBlock();
-      }
-    };
-
     const updateNestedBlock = (updatedBlock: Block) => {
       const index = thenBlocks.value.findIndex(block => block.id === updatedBlock.id);
       if (index !== -1) {
@@ -108,20 +105,26 @@ export default defineComponent({
     };
 
     const handleConditionDrop = (event: DragEvent) => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (event.dataTransfer) {
-    const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-    if (allowedConditionBlocks.includes(blockData.type)) {
-      const newBlock: Block = {
-        ...blockData,
-        id: Date.now().toString()
-      };
-      conditionBlocks.value = [newBlock]; // Replace existing condition block
-      updateBlock();
-    }
-  }
-};
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (allowedConditionBlocks.includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString()
+          };
+          conditionBlock.value = newBlock;
+          updateBlock();
+        }
+      }
+    };
+
+    const handleConditionDragStart = (event: DragEvent) => {
+      if (conditionBlock.value) {
+        handleNestedDragStart(event, conditionBlock.value);
+      }
+    };
 
     const handleNestedDrop = (event: DragEvent) => {
       event.stopPropagation();
@@ -154,9 +157,8 @@ export default defineComponent({
     };
 
     return {
-      conditionBlocks,
+      conditionBlock,
       thenBlocks,
-      updateBlock,
       getBlockComponent,
       removeConditionBlock,
       updateConditionBlock,
@@ -165,7 +167,8 @@ export default defineComponent({
       handleConditionDrop,
       handleNestedDrop,
       handleNestedDragStart,
-      handleDragStart
+      handleDragStart,
+      handleConditionDragStart
     };
   }
 });
