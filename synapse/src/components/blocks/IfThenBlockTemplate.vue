@@ -8,7 +8,9 @@
   >
     <div class="block-label">
       <span>If</span>
-      <slot name="condition-input"></slot>
+      <div class="condition-blocks" ref="conditionBlocksContainer" @dragover.prevent @drop.stop="onConditionDrop">
+        <slot name="condition-input"></slot>
+      </div>
     </div>
     <div class="then-section">
       <div class="then-label">then</div>
@@ -36,9 +38,10 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['remove', 'drop'],
+  emits: ['remove', 'drop', 'conditionDrop'],
   setup(props, context) {
     const nestedBlocksContainer = ref<HTMLElement | null>(null);
+    const conditionBlocksContainer = ref<HTMLElement | null>(null);
 
     onMounted(() => {
       if (nestedBlocksContainer.value) {
@@ -49,6 +52,18 @@ export default defineComponent({
 
         // Observe all direct children of the container
         nestedBlocksContainer.value.childNodes.forEach((childNode) => {
+          resizeObserver.observe(childNode as HTMLElement); 
+        });
+      }
+
+      if (conditionBlocksContainer.value) {
+        // Adjust height based on content
+        const resizeObserver = new ResizeObserver(() => {
+          conditionBlocksContainer.value!.style.height = 'auto'; 
+        });
+
+        // Observe all direct children of the container
+        conditionBlocksContainer.value.childNodes.forEach((childNode) => {
           resizeObserver.observe(childNode as HTMLElement); 
         });
       }
@@ -69,11 +84,17 @@ export default defineComponent({
       context.emit('drop', event);
     };
 
+    const onConditionDrop = (event: DragEvent) => {
+      context.emit('conditionDrop', event);
+    };
+
     return {
       nestedBlocksContainer,
+      conditionBlocksContainer,
       onDragStart,
       onDragEnd,
       onDrop,
+      onConditionDrop,
     };
   },
 });
@@ -89,10 +110,19 @@ export default defineComponent({
   margin-bottom: 10px;
 }
 
+.condition-blocks {
+  flex-grow: 1;
+  min-height: 30px;
+  grid-template-rows: auto 1fr; /* Label takes up necessary space, nested blocks expand */
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  padding: 5px;
+  margin-bottom: 5px;
+}
+
 /* Use grid for dynamic height */
 .then-section {
   display: grid;
-  grid-template-rows: auto 1fr; /* Label takes up necessary space, nested blocks expand */
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 5px;
   padding: 10px;

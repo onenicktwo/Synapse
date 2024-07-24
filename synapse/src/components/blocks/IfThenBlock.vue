@@ -4,14 +4,20 @@
     :isInWorkspace="isInWorkspace"
     @remove="$emit('remove')"
     @drop="handleNestedDrop"
+    @conditionDrop="handleConditionDrop"
     @dragstart="handleDragStart"
   >
     <template #condition-input>
-      <input
-        v-model="condition"
-        @input="updateBlock"
-        placeholder="condition"
-        class="condition-input"
+      <component
+        v-for="conditionBlock in conditionBlocks"
+        :key="conditionBlock.id"
+        :is="getBlockComponent(conditionBlock.type)"
+        :block="conditionBlock"
+        :isInWorkspace="true"
+        @remove="removeConditionBlock(conditionBlock.id)"
+        @update="updateConditionBlock"
+        draggable="true"
+        @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, conditionBlock)"
       />
     </template>
     <template #then-blocks>
@@ -36,12 +42,16 @@ import { Block, IfThenBlock as IfThenBlockType } from './types';
 import IfThenBlockTemplate from './IfThenBlockTemplate.vue';
 import { getBlockComponent } from '../blockUtils';
 import PrintBlock from './PrintBlock.vue';
+import ChangeVariableBlock from './ChangeVariableBlock.vue';
+import CreateVariableBlock from './CreateVariableBlock.vue';
 
 export default defineComponent({
   name: 'IfThenBlock',
   components: {
     IfThenBlockTemplate,
-    PrintBlock
+    PrintBlock,
+    ChangeVariableBlock,
+    CreateVariableBlock
   },
   props: {
     block: {
@@ -55,25 +65,38 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
-    const condition = ref(
-      props.block.inputs.find((input) => input.name === 'condition')?.default || ''
-    );
+    const conditionBlocks = ref<Block[]>(props.block.conditionBlocks || []);
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
 
-    const allowedNestedBlocks = ['print', 'ifThen']; // Add other allowed block types here
+    const allowedNestedBlocks = ['print', 'ifThen', 'changeVariable', 'createVariable'];
+    const allowedConditionBlocks = ['print'];
 
     const updateBlock = () => {
       const updatedBlock: IfThenBlockType = {
         ...props.block,
-        inputs: [{ name: 'condition', type: 'string', default: condition.value }],
+        conditionBlocks: conditionBlocks.value,
         thenBlocks: thenBlocks.value
       };
       emit('update', updatedBlock);
     };
 
+    const removeConditionBlock = (id: string) => {
+      conditionBlocks.value = conditionBlocks.value.filter(block => block.id !== id);
+      updateBlock();
+    };
+
     const removeNestedBlock = (id: string) => {
       thenBlocks.value = thenBlocks.value.filter(block => block.id !== id);
       updateBlock();
+    };
+
+
+    const updateConditionBlock = (updatedBlock: Block) => {
+      const index = conditionBlocks.value.findIndex(block => block.id === updatedBlock.id);
+      if (index !== -1) {
+        conditionBlocks.value[index] = updatedBlock;
+        updateBlock();
+      }
     };
 
     const updateNestedBlock = (updatedBlock: Block) => {
@@ -84,23 +107,39 @@ export default defineComponent({
       }
     };
 
-    const handleNestedDrop = (event: DragEvent) => {
-  event.stopPropagation(); // Prevent the event from bubbling up to the workspace
+    const handleConditionDrop = (event: DragEvent) => {
+  event.preventDefault();
+  event.stopPropagation();
   if (event.dataTransfer) {
     const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-    if (allowedNestedBlocks.includes(blockData.type)) {
+    if (allowedConditionBlocks.includes(blockData.type)) {
       const newBlock: Block = {
         ...blockData,
         id: Date.now().toString()
       };
-      thenBlocks.value.push(newBlock);
+      conditionBlocks.value = [newBlock]; // Replace existing condition block
       updateBlock();
     }
   }
 };
 
+    const handleNestedDrop = (event: DragEvent) => {
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (allowedNestedBlocks.includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString()
+          };
+          thenBlocks.value.push(newBlock);
+          updateBlock();
+        }
+      }
+    };
+
     const handleNestedDragStart = (event: DragEvent, block: Block) => {
-      event.stopPropagation(); // Prevent the parent block from being dragged
+      event.stopPropagation();
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(block));
         event.dataTransfer.effectAllowed = 'copy';
@@ -115,12 +154,15 @@ export default defineComponent({
     };
 
     return {
-      condition,
+      conditionBlocks,
       thenBlocks,
       updateBlock,
       getBlockComponent,
+      removeConditionBlock,
+      updateConditionBlock,
       removeNestedBlock,
       updateNestedBlock,
+      handleConditionDrop,
       handleNestedDrop,
       handleNestedDragStart,
       handleDragStart
@@ -130,12 +172,19 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.condition-input {
-  flex-grow: 1;
-  padding: 5px;
-  border: 1px solid #ccc;
+.condition-blocks {
+  min-height: 30px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
-  min-width: 30px;   /* Ensure a minimum width for the input */
-  /* Set an initial width that's not too large */ 
+  padding: 5px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
 }
 </style>
