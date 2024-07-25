@@ -32,14 +32,16 @@ import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; // Import ad
 import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
 import { getBlockComponent } from './blockUtils';
+import ComparisonOperatorBlock from './blocks/ComparisonOperatorBlock.vue';
 
 export default defineComponent({
   name: 'WorkspaceArea',
   components: {
     PrintBlock,
     IfThenBlock,
-    VariableBlock, // Register additional blocks
-    CreateVariableBlock, // Register additional blocks
+    VariableBlock,
+    CreateVariableBlock,
+    ComparisonOperatorBlock
   },
   data() {
     return {

@@ -11,7 +11,6 @@
 
 <script>
 import HeadingArea from '@/components/HeadingArea.vue';
-
 import ToolboxArea from './components/ToolboxArea.vue'
 import WorkspaceArea from './components/WorkspaceArea.vue'
 import OutputArea from './components/OutputArea.vue';

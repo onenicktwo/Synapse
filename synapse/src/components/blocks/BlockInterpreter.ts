@@ -1,4 +1,4 @@
-import { Block, IfThenBlock, PrintBlock, CreateVariableBlock } from './types';
+import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock } from './types';
 import store from '../../store'; // Import the Vuex store
 
 class BlockInterpreter {
@@ -24,6 +24,9 @@ class BlockInterpreter {
       case 'createVariable':
         this.executeCreateVariableBlock(block as CreateVariableBlock); 
         break;
+      case 'compareOperator':
+        this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
+        break;
       default:
         console.error(`Unknown block type: ${block.type}`);
     }
@@ -39,12 +42,12 @@ class BlockInterpreter {
   }
 
   private executeIfThenBlock(block: IfThenBlock): void {
-    const conditionResult = this.evaluateCondition(block);
+    const conditionResult = this.evaluateCondition(block.conditionBlock);
     if (conditionResult && block.thenBlocks) {
       for (const thenBlock of block.thenBlocks) {
         this.executeBlock(thenBlock);
       }
-    } 
+    }
   }
 
   private executeCreateVariableBlock(block: CreateVariableBlock): void {
@@ -59,13 +62,43 @@ class BlockInterpreter {
     }
   }
 
-  private evaluateCondition(block: IfThenBlock): boolean {
-    if (block.inputs && block.inputs.length > 0) {
-      const conditionValue = this.evaluateInput(block.inputs[0]);
-      return Boolean(conditionValue); // Convert the condition to a boolean
-    } else {
-      console.error('IfThen block has no condition input');
+  private evaluateCondition(block: Block | null): boolean {
+    if (block == null) {
       return false;
+    }
+    let conditionValue = false;
+    switch (block.type) {
+      case 'compareOperator':
+        conditionValue = this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
+        break;
+      default:
+        console.error(`Unknown block type: ${block.type}`);
+        conditionValue = false;
+        break;
+    }
+    return conditionValue;
+  }
+
+  private executeComparisonOperatorBlock(block: ComparisonOperatorBlock): boolean {
+    const leftValue = block.leftBlock ? this.evaluateInput(block.leftBlock) : block.leftInput;
+    const rightValue = block.rightBlock ? this.evaluateInput(block.rightBlock) : block.rightInput;
+    console.log("comparison");
+    switch (block.operator) {
+      case '==':
+        return leftValue == rightValue;
+      case '!=':
+        return leftValue != rightValue;
+      case '<':
+        return leftValue < rightValue;
+      case '<=':
+        return leftValue <= rightValue;
+      case '>':
+        return leftValue > rightValue;
+      case '>=':
+        return leftValue >= rightValue;
+      default:
+        console.error(`Unknown operator: ${block.operator}`);
+        return false;
     }
   }
 

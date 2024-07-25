@@ -94,6 +94,13 @@ const state: BlocksState = {
           default: ''
         }
       ]
+    },
+    {
+      id: 'compareOperator',
+      type: 'compareOperator',
+      label: 'ComparisonOperatorBlock',
+      color: '#00BFFF',
+      inputs: []
     }
   ]
 };

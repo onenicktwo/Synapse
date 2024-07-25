@@ -6,12 +6,14 @@ export function getBlockComponent(type: string): string | null {
         return 'PrintBlock';
       case 'ifThen':
         return 'IfThenBlock';
-        case 'createVariable':
-            return 'CreateVariableBlock';
-          case 'changeVariable':
-            return 'ChangeVariableBlock';
-          case 'variable':
-            return 'VariableBlock';
+      case 'createVariable':
+        return 'CreateVariableBlock';
+      case 'changeVariable':
+        return 'ChangeVariableBlock';
+      case 'variable':
+        return 'VariableBlock';
+      case 'compareOperator':
+        return 'ComparisonOperatorBlock'
       default:
         console.error(`Unknown block type: ${type}`);
         return null;

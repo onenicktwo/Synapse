@@ -34,3 +34,12 @@ export interface CreateVariableBlock extends Block {
     { name: 'variableValue'; type: 'number'; default: string } // Variable Value
   ];
 }
+
+export interface ComparisonOperatorBlock extends Block {
+  type: 'compareOperator';
+  operator: '==' | '!=' | '<' | '<=' | '>' | '>=';
+  leftBlock: Block | null;
+  rightBlock: Block | null;
+  leftInput: string;
+  rightInput: string;
+}
