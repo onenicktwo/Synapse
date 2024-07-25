@@ -182,7 +182,8 @@ export default defineComponent({
 
 <style scoped>
 .comparison-operator-block {
-  width: auto; /* Allow the width to adjust automatically */
+  min-width: 250px; /* Allow the width to adjust automatically */
+  width: auto;
   padding: 10px;
   border-radius: 5px;
   cursor: move;
