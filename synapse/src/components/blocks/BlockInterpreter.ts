@@ -1,4 +1,4 @@
-import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock } from './types';
+import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock, MathOperatorBlock, VariableBlock } from './types';
 import store from '../../store'; // Import the Vuex store
 
 class BlockInterpreter {
@@ -27,6 +27,12 @@ class BlockInterpreter {
       case 'compareOperator':
         this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
         break;
+      case 'mathOperator':
+        this.executeMathOperatorBlock(block as MathOperatorBlock);
+        break;
+      case 'variable':
+        this.executeVariableBlock(block as VariableBlock);
+        break;
       default:
         console.error(`Unknown block type: ${block.type}`);
     }
@@ -42,52 +48,34 @@ class BlockInterpreter {
   }
 
   private executeIfThenBlock(block: IfThenBlock): void {
-    const conditionResult = this.evaluateCondition(block.conditionBlock);
-    if (conditionResult && block.thenBlocks) {
-      for (const thenBlock of block.thenBlocks) {
-        this.executeBlock(thenBlock);
+    if (block.conditionBlock && this.evaluateCondition(block.conditionBlock)) {
+      for (const subBlock of block.thenBlocks) {
+        this.executeBlock(subBlock);
       }
     }
   }
 
   private executeCreateVariableBlock(block: CreateVariableBlock): void {
-    const [nameInput, valueInput] = block.inputs;
-    const name = this.evaluateInput(nameInput);
-    const value = this.evaluateInput(valueInput);
+    const variableNameInput = block.inputs.find(input => input.name === 'variableName');
+    const variableValueInput = block.inputs.find(input => input.name === 'variableValue');
 
-    if (typeof name === 'string' && typeof value === 'string') {
-      store.dispatch('variables/addVariable', { name, value });
+    if (variableNameInput) {
+      const variableName = variableNameInput.default;
+      const variableValue = variableValueInput ? parseFloat(variableValueInput.default) : 0;
+      store.dispatch('variables/addVariable', { name: variableName, value: variableValue });
     } else {
-      console.error('CreateVariable block has invalid inputs');
+      console.error('CreateVariable block has no variable name input');
     }
-  }
-
-  private evaluateCondition(block: Block | null): boolean {
-    if (block == null) {
-      return false;
-    }
-    let conditionValue = false;
-    switch (block.type) {
-      case 'compareOperator':
-        conditionValue = this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
-        break;
-      default:
-        console.error(`Unknown block type: ${block.type}`);
-        conditionValue = false;
-        break;
-    }
-    return conditionValue;
   }
 
   private executeComparisonOperatorBlock(block: ComparisonOperatorBlock): boolean {
-    const leftValue = block.leftBlock ? this.evaluateInput(block.leftBlock) : block.leftInput;
-    const rightValue = block.rightBlock ? this.evaluateInput(block.rightBlock) : block.rightInput;
-    console.log("comparison");
+    const leftValue = this.evaluateInput(block.leftInput);
+    const rightValue = this.evaluateInput(block.rightInput);
     switch (block.operator) {
       case '==':
-        return leftValue == rightValue;
+        return leftValue === rightValue;
       case '!=':
-        return leftValue != rightValue;
+        return leftValue !== rightValue;
       case '<':
         return leftValue < rightValue;
       case '<=':
@@ -97,17 +85,65 @@ class BlockInterpreter {
       case '>=':
         return leftValue >= rightValue;
       default:
-        console.error(`Unknown operator: ${block.operator}`);
+        console.error(`Unknown comparison operator: ${block.operator}`);
         return false;
     }
   }
 
-  private evaluateInput(input: any): any {
-    console.log('Evaluating input:', input);
-    if (typeof input === 'object' && input.default !== undefined) {
-      return input.default;
+  private executeMathOperatorBlock(block: MathOperatorBlock): number {
+    const leftValue = this.evaluateInput(block.leftInput);
+    const rightValue = this.evaluateInput(block.rightInput);
+    switch (block.operator) {
+      case '+':
+        return leftValue + rightValue;
+      case '-':
+        return leftValue - rightValue;
+      case '*':
+        return leftValue * rightValue;
+      case '/':
+        return leftValue / rightValue;
+      default:
+        console.error(`Unknown math operator: ${block.operator}`);
+        return 0;
     }
-    return input;
+  }
+
+  private executeVariableBlock(block: VariableBlock): number | undefined {
+    const variable = store.getters['variables/getVariableByName'](block.variableName);
+    if (variable) {
+      return variable.value;
+    } else {
+      console.error(`Variable ${block.variableName} not found`);
+      return undefined;
+    }
+  }
+
+  private evaluateInput(input: any): number {
+    if (typeof input === 'number') {
+      return input;
+    } else if (typeof input === 'string') {
+      const variable = store.getters['variables/getVariableByName'](input);
+      if (variable) {
+        return variable.value;
+      } else {
+        console.error(`Variable ${input} not found`);
+        return 0;
+      }
+    } else if (input && typeof input === 'object') {
+      return this.executeMathOperatorBlock(input as MathOperatorBlock);
+    } else {
+      return 0;
+    }
+  }
+
+  private evaluateCondition(condition: any): boolean {
+    if (typeof condition === 'boolean') {
+      return condition;
+    } else if (condition && typeof condition === 'object') {
+      return this.executeComparisonOperatorBlock(condition as ComparisonOperatorBlock);
+    } else {
+      return false;
+    }
   }
 }
 

@@ -1,4 +1,5 @@
-// store/modules/blocks.ts
+import { Module } from 'vuex';
+import { RootState } from '../index';
 
 interface BlockInput {
   name: string;
@@ -65,24 +66,6 @@ const state: BlocksState = {
       ]
     },
     {
-      id: 'changeVariable',
-      type: 'changeVariable',
-      label: 'Change Variable',
-      color: '#FFA500',
-      inputs: [
-        {
-          name: 'variable',
-          type: 'string',
-          default: ''
-        },
-        {
-          name: 'value',
-          type: 'number',
-          default: "0"
-        }
-      ]
-    },
-    {
       id: 'variable',
       type: 'variable',
       label: 'Variable',
@@ -98,20 +81,61 @@ const state: BlocksState = {
     {
       id: 'compareOperator',
       type: 'compareOperator',
-      label: 'ComparisonOperatorBlock',
+      label: 'Comparison Operator',
       color: '#00BFFF',
       inputs: []
+    },
+    {
+      id: 'mathOperator',
+      type: 'mathOperator',
+      label: 'Math Operator',
+      color: '#FF5733',
+      inputs: [
+        {
+          name: 'leftOperand',
+          type: 'number',
+          default: '0'
+        },
+        {
+          name: 'rightOperand',
+          type: 'number',
+          default: '0'
+        },
+        {
+          name: 'operator',
+          type: 'string',
+          default: '+'
+        }
+      ]
     }
   ]
 };
 
-
 const mutations = {
-  // We'll add mutations later if needed
+  ADD_BLOCK(state: BlocksState, block: Block) {
+    state.blocks.push(block);
+  },
+  REMOVE_BLOCK(state: BlocksState, blockId: string) {
+    state.blocks = state.blocks.filter(block => block.id !== blockId);
+  },
+  UPDATE_BLOCK(state: BlocksState, updatedBlock: Block) {
+    const index = state.blocks.findIndex(block => block.id === updatedBlock.id);
+    if (index !== -1) {
+      state.blocks.splice(index, 1, updatedBlock);
+    }
+  }
 };
 
 const actions = {
-  // We'll add actions later if needed
+  addBlock({ commit }: { commit: Function }, block: Block) {
+    commit('ADD_BLOCK', block);
+  },
+  removeBlock({ commit }: { commit: Function }, blockId: string) {
+    commit('REMOVE_BLOCK', blockId);
+  },
+  updateBlock({ commit }: { commit: Function }, block: Block) {
+    commit('UPDATE_BLOCK', block);
+  }
 };
 
 const getters = {
@@ -126,4 +150,4 @@ export default {
   mutations,
   actions,
   getters
-};
+} as Module<BlocksState, RootState>;

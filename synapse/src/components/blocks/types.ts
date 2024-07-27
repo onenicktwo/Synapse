@@ -43,3 +43,17 @@ export interface ComparisonOperatorBlock extends Block {
   leftInput: string;
   rightInput: string;
 }
+
+export interface MathOperatorBlock extends Block {
+  type: 'mathOperator';
+  operator: '+' | '-' | '*' | '/';
+  leftBlock: Block | null;
+  rightBlock: Block | null;
+  leftInput: string;
+  rightInput: string;
+}
+
+export interface VariableBlock extends Block {
+  type: 'variable';
+  variableName: string;
+}

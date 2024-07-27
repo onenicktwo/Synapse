@@ -33,6 +33,7 @@ import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
 import { getBlockComponent } from './blockUtils';
 import ComparisonOperatorBlock from './blocks/ComparisonOperatorBlock.vue';
+import MathOperatorBlock from './blocks/MathOperatorBlock.vue';
 
 export default defineComponent({
   name: 'WorkspaceArea',
@@ -41,7 +42,8 @@ export default defineComponent({
     IfThenBlock,
     VariableBlock,
     CreateVariableBlock,
-    ComparisonOperatorBlock
+    ComparisonOperatorBlock,
+    MathOperatorBlock,
   },
   data() {
     return {
