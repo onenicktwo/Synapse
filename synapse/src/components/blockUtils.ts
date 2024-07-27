@@ -13,7 +13,9 @@ export function getBlockComponent(type: string): string | null {
       case 'variable':
         return 'VariableBlock';
       case 'compareOperator':
-        return 'ComparisonOperatorBlock'
+        return 'ComparisonOperatorBlock';
+      case 'compareLogic':
+        return 'ComparisonLogicBlock';
       default:
         console.error(`Unknown block type: ${type}`);
         return null;

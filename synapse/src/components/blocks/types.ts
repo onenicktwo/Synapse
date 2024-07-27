@@ -43,3 +43,10 @@ export interface ComparisonOperatorBlock extends Block {
   leftInput: string;
   rightInput: string;
 }
+
+export interface ComparisonLogicBlock extends Block {
+  type: 'compareLogic';
+  operator: '&&' | '||';
+  leftBlock: Block | null;
+  rightBlock: Block | null;
+}

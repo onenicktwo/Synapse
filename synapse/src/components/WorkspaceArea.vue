@@ -33,6 +33,7 @@ import { Block } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
 import { getBlockComponent } from './blockUtils';
 import ComparisonOperatorBlock from './blocks/ComparisonOperatorBlock.vue';
+import ComparisonLogicBlock from './blocks/ComparisonLogicBlock.vue';
 
 export default defineComponent({
   name: 'WorkspaceArea',
@@ -41,7 +42,8 @@ export default defineComponent({
     IfThenBlock,
     VariableBlock,
     CreateVariableBlock,
-    ComparisonOperatorBlock
+    ComparisonOperatorBlock,
+    ComparisonLogicBlock
   },
   data() {
     return {
@@ -90,7 +92,9 @@ export default defineComponent({
   min-height: 300px;
   display: flex;
   flex-direction: column;
+  overflow-x: auto; /* Add horizontal scrolling if content overflows */
 }
+
 
 .workspace-header {
   border-bottom: 1px solid #e0e0e0;
@@ -114,7 +118,12 @@ export default defineComponent({
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: min-content; /* Ensures content doesn't shrink below its minimum size */
 }
+
 
 .btn-primary {
   background-color: #6c757d;

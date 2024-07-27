@@ -1,6 +1,6 @@
 <template>
     <div
-      class="block comparison-operator-block"
+      class="block logical-operator-block"
       :style="{ backgroundColor: block.color }"
       draggable="true"
       @dragstart="onDragStart"
@@ -8,52 +8,42 @@
     >
       <div class="block-content">
         <div class="input-container left" :class="{ 'has-block': leftBlock }">
-          <component
-            v-if="leftBlock"
-            :key="leftBlock.id"
-            :is="getBlockComponent(leftBlock.type)"
-            :block="leftBlock"
-            :isInWorkspace="true"
-            @remove="removeLeftBlock"
-            @update="updateLeftBlock"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
-          />
-          <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
-            <input 
-              type="text" 
-              v-model="leftInput" 
-              placeholder="Left input"
-              @input="updateBlock"
-            >
-          </div>
-        </div>
+    <component
+      v-if="leftBlock"
+      :key="leftBlock.id"
+      :is="getBlockComponent(leftBlock.type)"
+      :block="leftBlock"
+      :isInWorkspace="true"
+      @remove="removeLeftBlock"
+      @update="updateLeftBlock"
+      draggable="true"
+      @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
+    />
+    <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
+      <span>Drop block here</span>
+    </div>
+  </div>
         
         <select v-model="selectedOperator" @change="updateBlock">
           <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
         </select>
         
         <div class="input-container right" :class="{ 'has-block': rightBlock }">
-          <component
-            v-if="rightBlock"
-            :key="rightBlock.id"
-            :is="getBlockComponent(rightBlock.type)"
-            :block="rightBlock"
-            :isInWorkspace="true"
-            @remove="removeRightBlock"
-            @update="updateRightBlock"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
-          />
-          <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
-            <input 
-              type="text" 
-              v-model="rightInput" 
-              placeholder="Right input"
-              @input="updateBlock"
-            >
-          </div>
-        </div>
+    <component
+      v-if="rightBlock"
+      :key="rightBlock.id"
+      :is="getBlockComponent(rightBlock.type)"
+      :block="rightBlock"
+      :isInWorkspace="true"
+      @remove="removeRightBlock"
+      @update="updateRightBlock"
+      draggable="true"
+      @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
+    />
+    <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
+      <span>Drop block here</span>
+    </div>
+  </div>
       </div>
       <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
     </div>
@@ -61,14 +51,18 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
-import { Block, ComparisonOperatorBlock as ComparisonOperatorBlockType } from './types';
+import { Block, ComparisonLogicBlock as ComparisonLogicBlockType } from './types';
 import { getBlockComponent } from '../blockUtils';
+import ComparisonOperatorBlock from './ComparisonOperatorBlock.vue';
 
 export default defineComponent({
-  name: 'ComparisonOperatorBlock',
+  name: 'ComparisonLogicBlock',
+  components: {
+    ComparisonOperatorBlock,
+  },
   props: {
     block: {
-      type: Object as PropType<ComparisonOperatorBlockType>,
+      type: Object as PropType<ComparisonLogicBlockType>,
       required: true,
     },
     isInWorkspace: {
@@ -78,23 +72,19 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
-    const operators = ['==', '!=', '<', '<=', '>', '>='];
-    const selectedOperator = ref(props.block.operator || '==');
+    const operators = ['&&', '||'] as const;
+    const selectedOperator = ref(props.block.operator || '&&');
     const leftBlock = ref<Block | null>(props.block.leftBlock || null);
     const rightBlock = ref<Block | null>(props.block.rightBlock || null);
-    const leftInput = ref(props.block.leftInput || '');
-    const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable'];
+    const allowedInputBlocks = ['compareLogic', 'compareOperator'];
 
     const updateBlock = () => {
-      const updatedBlock: ComparisonOperatorBlockType = {
+      const updatedBlock: ComparisonLogicBlockType = {
         ...props.block,
         operator: selectedOperator.value,
         leftBlock: leftBlock.value,
-        rightBlock: rightBlock.value,
-        leftInput: leftInput.value,
-        rightInput: rightInput.value,
+        rightBlock: rightBlock.value
       };
       emit('update', updatedBlock);
     };
@@ -120,24 +110,26 @@ export default defineComponent({
     };
 
     const handleInputDrop = (event: DragEvent, side: 'left' | 'right') => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (event.dataTransfer) {
-        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-        if (allowedInputBlocks.includes(blockData.type)) {
-          const newBlock: Block = {
-            ...blockData,
-            id: Date.now().toString()
-          };
-          if (side === 'left') {
-            leftBlock.value = newBlock;
-          } else {
-            rightBlock.value = newBlock;
-          }
-          updateBlock();
-        }
+  event.preventDefault();
+  event.stopPropagation();
+  if (event.dataTransfer) {
+    const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+    if (allowedInputBlocks.includes(blockData.type)) {
+      const newBlock: Block = {
+        ...blockData,
+        id: Date.now().toString()
+      };
+      if (side === 'left') {
+        leftBlock.value = newBlock;
+      } else {
+        rightBlock.value = newBlock;
       }
-    };
+      updateBlock();
+    } else {
+      console.log(`Block type ${blockData.type} is not allowed as input`);
+    }
+  }
+};
 
     const handleInputDragStart = (event: DragEvent, side: 'left' | 'right') => {
       const block = side === 'left' ? leftBlock.value : rightBlock.value;
@@ -163,8 +155,6 @@ export default defineComponent({
       selectedOperator,
       leftBlock,
       rightBlock,
-      leftInput,
-      rightInput,
       getBlockComponent,
       removeLeftBlock,
       removeRightBlock,

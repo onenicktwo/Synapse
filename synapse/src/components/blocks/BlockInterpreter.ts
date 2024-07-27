@@ -1,4 +1,4 @@
-import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock } from './types';
+import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock } from './types';
 import store from '../../store'; // Import the Vuex store
 
 class BlockInterpreter {
@@ -12,23 +12,22 @@ class BlockInterpreter {
     return this.output;
   }
 
-  private executeBlock(block: Block): void {
+  private executeBlock(block: Block): any {
     console.log('Executing block:', block);
     switch (block.type) {
       case 'print':
-        this.executePrintBlock(block as PrintBlock); 
-        break;
+        return this.executePrintBlock(block as PrintBlock);
       case 'ifThen':
-        this.executeIfThenBlock(block as IfThenBlock); 
-        break;
+        return this.executeIfThenBlock(block as IfThenBlock);
       case 'createVariable':
-        this.executeCreateVariableBlock(block as CreateVariableBlock); 
-        break;
+        return this.executeCreateVariableBlock(block as CreateVariableBlock);
       case 'compareOperator':
-        this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
-        break;
+        return this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
+      case 'compareLogic':
+        return this.executeComparisonLogicBlock(block as ComparisonLogicBlock);
       default:
         console.error(`Unknown block type: ${block.type}`);
+        return null;
     }
   }
 
@@ -42,11 +41,13 @@ class BlockInterpreter {
   }
 
   private executeIfThenBlock(block: IfThenBlock): void {
-    const conditionResult = this.evaluateCondition(block.conditionBlock);
-    if (conditionResult && block.thenBlocks) {
+    if (block.conditionBlock) {
+      const conditionResult = this.evaluateCondition(block.conditionBlock);
+      if (conditionResult && block.thenBlocks) {
       for (const thenBlock of block.thenBlocks) {
         this.executeBlock(thenBlock);
       }
+    }
     }
   }
 
@@ -62,27 +63,9 @@ class BlockInterpreter {
     }
   }
 
-  private evaluateCondition(block: Block | null): boolean {
-    if (block == null) {
-      return false;
-    }
-    let conditionValue = false;
-    switch (block.type) {
-      case 'compareOperator':
-        conditionValue = this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
-        break;
-      default:
-        console.error(`Unknown block type: ${block.type}`);
-        conditionValue = false;
-        break;
-    }
-    return conditionValue;
-  }
-
   private executeComparisonOperatorBlock(block: ComparisonOperatorBlock): boolean {
     const leftValue = block.leftBlock ? this.evaluateInput(block.leftBlock) : block.leftInput;
     const rightValue = block.rightBlock ? this.evaluateInput(block.rightBlock) : block.rightInput;
-    console.log("comparison");
     switch (block.operator) {
       case '==':
         return leftValue == rightValue;
@@ -102,10 +85,49 @@ class BlockInterpreter {
     }
   }
 
+  private executeComparisonLogicBlock(block: ComparisonLogicBlock): boolean {
+    if (!block.leftBlock || !block.rightBlock) {
+      return false;
+    }
+    const leftValue = this.evaluateCondition(block.leftBlock);
+    const rightValue = this.evaluateCondition(block.rightBlock);
+    console.log('Left value:', leftValue);
+    console.log('Right value:', rightValue);
+    switch (block.operator) {
+      case '&&':
+        return leftValue && rightValue;
+      case '||':
+        return leftValue || rightValue;
+      default:
+        console.error(`Unknown operator: ${block.operator}`);
+        return false;
+    }
+  }
+
+  private evaluateCondition(block: Block): boolean {
+    if (block == null) {
+      return false;
+    }
+    switch (block.type) {
+      case 'compareOperator':
+        return this.executeComparisonOperatorBlock(block as ComparisonOperatorBlock);
+      case 'compareLogic':
+        return this.executeComparisonLogicBlock(block as ComparisonLogicBlock);
+      default:
+        console.error(`Unknown block type in condition: ${block.type}`);
+        return false;
+    }
+  }
+
   private evaluateInput(input: any): any {
     console.log('Evaluating input:', input);
-    if (typeof input === 'object' && input.default !== undefined) {
-      return input.default;
+    if (typeof input === 'object' && input !== null) {
+      if (input.type === 'variable') {
+        // Fetch variable value from store
+        return store.getters['variables/getVariableValue'](input.name);
+      } else if (input.default !== undefined) {
+        return input.default;
+      }
     }
     return input;
   }

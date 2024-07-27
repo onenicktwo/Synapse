@@ -45,6 +45,7 @@ import CreateVariableBlock from './CreateVariableBlock.vue';
 import PrintBlock from './PrintBlock.vue';
 import VariableBlock from './VariableBlock.vue';
 import ComparisonOperatorBlock from './ComparisonOperatorBlock.vue';
+import ComparisonLogicBlock from './ComparisonLogicBlock.vue';
 
 export default defineComponent({
   name: 'IfThenBlock',
@@ -53,7 +54,8 @@ export default defineComponent({
     CreateVariableBlock,
     PrintBlock,
     VariableBlock,
-    ComparisonOperatorBlock
+    ComparisonOperatorBlock,
+    ComparisonLogicBlock
   },
   props: {
     block: {
@@ -71,7 +73,7 @@ export default defineComponent({
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
     
     const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable'];
-    const allowedConditionBlocks = ['compareOperator'];
+    const allowedConditionBlocks = ['compareOperator', 'compareLogic'];
 
     const updateBlock = () => {
       const updatedBlock: IfThenBlockType = {

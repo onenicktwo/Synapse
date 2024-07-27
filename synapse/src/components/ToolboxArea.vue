@@ -25,6 +25,7 @@ import CreateVariableBlock from './blocks/CreateVariableBlock.vue';
 import { Block } from './blocks/types';
 import { getBlockComponent } from './blockUtils';
 import ComparisonOperatorBlock from './blocks/ComparisonOperatorBlock.vue';
+import ComparisonLogicBlock from './blocks/ComparisonLogicBlock.vue';
 
 export default defineComponent({
   name: 'ToolboxArea',
@@ -33,7 +34,8 @@ export default defineComponent({
     IfThenBlock,
     VariableBlock,
     CreateVariableBlock,
-    ComparisonOperatorBlock
+    ComparisonOperatorBlock,
+    ComparisonLogicBlock
   },
   computed: {
     ...mapGetters('blocks', ['getAllBlocks']),
@@ -51,7 +53,7 @@ export default defineComponent({
 .toolbox-area {
   padding-top: 1rem;
   background-color: #f8f9fa; /* Light background for a clean look */
-  width: 250px;
+  width: 300px;
   height: 100%;
   overflow-y: auto;
   border-right: 1px solid #e0e0e0;
