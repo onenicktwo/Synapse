@@ -1,4 +1,4 @@
-import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock } from './types';
+import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock } from './types';
 import store from '../../store'; // Import the Vuex store
 
 class BlockInterpreter {
@@ -27,11 +27,14 @@ class BlockInterpreter {
         return this.executeComparisonLogicBlock(block as ComparisonLogicBlock);
       case 'repeat':
         return this.executeRepeatBlock(block as RepeatBlock);
+      case 'mathOperator':
+        return this.executeMathOperatorBlock(block as MathOperatorBlock);
       default:
         console.error(`Unknown block type: ${block.type}`);
         return null;
     }
   }
+
   
   private executeRepeatBlock(block: RepeatBlock): void {
     const repeatCount = block.repeatCount;
@@ -42,12 +45,35 @@ class BlockInterpreter {
     }
   }
 
+  private executeMathOperatorBlock(block: MathOperatorBlock): number {
+    const leftValue = this.evaluateInput(block.leftBlock || block.leftInput);
+    const rightValue = this.evaluateInput(block.rightBlock || block.rightInput);
+    
+    switch (block.operator) {
+      case '+':
+        return Number(leftValue) + Number(rightValue);
+      case '-':
+        return Number(leftValue) - Number(rightValue);
+      case '*':
+        return Number(leftValue) * Number(rightValue);
+      case '/':
+        if (Number(rightValue) === 0) {
+          console.error('Division by zero');
+          return NaN;
+        }
+        return Number(leftValue) / Number(rightValue);
+      default:
+        console.error(`Unknown operator: ${block.operator}`);
+        return NaN;
+    }
+  }
+
+
+
   private executePrintBlock(block: PrintBlock): void {
     if (block.inputs && block.inputs.length > 0) {
       const value = this.evaluateInput(block.inputs[0]);
       this.output.push(String(value));
-    } else {
-      console.error('Print block has no inputs');
     }
   }
 
@@ -136,12 +162,14 @@ class BlockInterpreter {
       if (input.type === 'variable') {
         // Fetch variable value from store
         return store.getters['variables/getVariableValue'](input.name);
+      } else if (input.type === 'mathOperator') {
+        // Recursively evaluate math operator blocks
+        return this.executeMathOperatorBlock(input as MathOperatorBlock);
       } else if (input.default !== undefined) {
         return input.default;
       }
     }
     return input;
-  }
-}
+  }}
 
 export default BlockInterpreter;
