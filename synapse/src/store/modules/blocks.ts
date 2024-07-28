@@ -103,7 +103,26 @@ const state: BlocksState = {
           default: '1'
         }
       ]
+    },
+    {
+      id: 'mathOperator',
+      type: 'mathOperator',
+      label: 'Math Operator',
+      color: '#FF5722', // You can choose a different color if you prefer
+      inputs: [
+        {
+          name: 'leftInput',
+          type: 'number',
+          default: '0'
+        },
+        {
+          name: 'rightInput',
+          type: 'number',
+          default: '0'
+        }
+      ]
     }
+
   ]
 };
 
