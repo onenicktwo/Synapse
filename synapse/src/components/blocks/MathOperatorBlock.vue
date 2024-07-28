@@ -29,7 +29,7 @@
         </div>
       </div>
       
-      <select v-model="selectedOperator" @change="updateBlock">
+      <select v-model="selectedOperator" @change="updateBlock" class="operator-select">
         <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
       </select>
       
@@ -191,6 +191,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  background-color: #f8f9fa; /* Light background color */
 }
 
 .block-content {
@@ -203,7 +204,7 @@ export default defineComponent({
 .input-container {
   width: 80px;
   min-height: 30px;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border: 2px dashed rgba(0, 0, 0, 0.5);
   border-radius: 5px;
   padding: 5px;
   margin: 0 5px;
@@ -214,6 +215,7 @@ export default defineComponent({
 
 .input-container.has-block {
   width: 80px;
+  border: 2px solid #007bff; /* Highlight border if a block is present */
 }
 
 .block-input {
@@ -222,4 +224,18 @@ export default defineComponent({
   align-items: center;
 }
 
+.operator-select {
+  margin: 0 10px;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: #ff0000; /* Red color for the delete button */
+}
 </style>
