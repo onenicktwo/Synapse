@@ -20,7 +20,7 @@ export interface Block {
 
 export interface PrintBlock extends Block {
   type: 'print';
-  value: string;
+  nestedBlock: Block | null;
 }
 
 export interface IfThenBlock extends Block {
@@ -68,6 +68,10 @@ export interface MathOperatorBlock extends Block {
   rightInput: string; // For direct input
 }
 
+export interface VariableBlock extends Block {
+  type: 'variable';
+}
+
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
@@ -83,8 +87,6 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   variable: 'VariableBlock',
   mathOperator: 'MathOperatorBlock'
 };
-
-
 
 export const blockComponents: Record<BlockComponentName, Component> = {
   PrintBlock: markRaw(require('./PrintBlock.vue').default),

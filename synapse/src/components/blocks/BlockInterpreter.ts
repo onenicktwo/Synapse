@@ -1,4 +1,4 @@
-import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock } from './types';
+import { Block, IfThenBlock, PrintBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock, VariableBlock } from './types';
 import store from '../../store'; // Import the Vuex store
 
 class BlockInterpreter {
@@ -29,13 +29,18 @@ class BlockInterpreter {
         return this.executeRepeatBlock(block as RepeatBlock);
       case 'mathOperator':
         return this.executeMathOperatorBlock(block as MathOperatorBlock);
+      case 'variable':
+        return this.exectueVariableBlock(block as VariableBlock);
       default:
         console.error(`Unknown block type: ${block.type}`);
         return null;
     }
   }
 
-  
+  private exectueVariableBlock(block: VariableBlock) {
+    return store.getters['variables/getVariableById'](block.id).value;
+  }
+
   private executeRepeatBlock(block: RepeatBlock): void {
     const repeatCount = block.repeatCount;
     for (let i = 0; i < repeatCount; i++) {
@@ -68,10 +73,10 @@ class BlockInterpreter {
     }
   }
 
-
-
   private executePrintBlock(block: PrintBlock): void {
-    if (block.inputs && block.inputs.length > 0) {
+    if (block.nestedBlock != null) {
+      return this.executeBlock(block.nestedBlock);
+    } else {
       const value = this.evaluateInput(block.inputs[0]);
       this.output.push(String(value));
     }
