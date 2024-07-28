@@ -11,7 +11,7 @@
       <component
         v-if="conditionBlock"
         :key="conditionBlock.id"
-        :is="getBlockComponent(conditionBlock.type)"
+        :is="components[getBlockComponent(conditionBlock.type)]"
         :block="conditionBlock"
         :isInWorkspace="true"
         @remove="removeConditionBlock"
@@ -24,7 +24,7 @@
       <component
         v-for="nestedBlock in thenBlocks"
         :key="nestedBlock.id"
-        :is="getBlockComponent(nestedBlock.type)"
+        :is="components[getBlockComponent(nestedBlock.type)]"
         :block="nestedBlock"
         :isInWorkspace="true"
         @remove="removeNestedBlock(nestedBlock.id)"
@@ -37,25 +37,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue';
-import { Block, IfThenBlock as IfThenBlockType } from './types';
+import { defineComponent, PropType, ref, computed } from 'vue';
+import { Block, IfThenBlock as IfThenBlockType, blockComponents } from './types';
 import IfThenBlockTemplate from './IfThenBlockTemplate.vue';
 import { getBlockComponent } from '../blockUtils';
-import CreateVariableBlock from './CreateVariableBlock.vue';
-import PrintBlock from './PrintBlock.vue';
-import VariableBlock from './VariableBlock.vue';
-import ComparisonOperatorBlock from './ComparisonOperatorBlock.vue';
-import ComparisonLogicBlock from './ComparisonLogicBlock.vue';
 
 export default defineComponent({
   name: 'IfThenBlock',
   components: {
     IfThenBlockTemplate,
-    CreateVariableBlock,
-    PrintBlock,
-    VariableBlock,
-    ComparisonOperatorBlock,
-    ComparisonLogicBlock
   },
   props: {
     block: {
@@ -69,10 +59,11 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
+    const components = computed(() => blockComponents);
     const conditionBlock = ref<Block | null>(props.block.conditionBlock || null);
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
     
-    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable'];
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat'];
     const allowedConditionBlocks = ['compareOperator', 'compareLogic'];
 
     const updateBlock = () => {
@@ -161,6 +152,7 @@ export default defineComponent({
     return {
       conditionBlock,
       thenBlocks,
+      components,
       getBlockComponent,
       removeConditionBlock,
       updateConditionBlock,

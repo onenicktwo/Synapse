@@ -1,3 +1,5 @@
+import { Component, markRaw } from "vue";
+
 export interface BlockInput {
   name: string;
   type: string;
@@ -30,8 +32,8 @@ export interface IfThenBlock extends Block {
 export interface CreateVariableBlock extends Block {
   type: 'createVariable';
   inputs: [
-    { name: 'variableName'; type: 'text'; default: string }, // Variable Name
-    { name: 'variableValue'; type: 'number'; default: string } // Variable Value
+    { name: 'variableName'; type: 'text'; default: string },
+    { name: 'variableValue'; type: 'number'; default: string }
   ];
 }
 
@@ -50,3 +52,35 @@ export interface ComparisonLogicBlock extends Block {
   leftBlock: Block | null;
   rightBlock: Block | null;
 }
+
+export interface RepeatBlock extends Block {
+  type: 'repeat';
+  repeatCount: number;
+  nestedBlocks: Block[];
+}
+
+export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable';
+
+export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
+| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock'
+
+export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
+  print: 'PrintBlock',
+  ifThen: 'IfThenBlock',
+  createVariable: 'CreateVariableBlock',
+  compareOperator: 'ComparisonOperatorBlock',
+  compareLogic: 'ComparisonLogicBlock',
+  repeat: 'RepeatBlock',
+  variable: 'VariableBlock',
+};
+
+export const blockComponents: Record<BlockComponentName, Component> = {
+  PrintBlock: markRaw(require('./PrintBlock.vue').default),
+  IfThenBlock: markRaw(require('./IfThenBlock.vue').default),
+  CreateVariableBlock: markRaw(require('./CreateVariableBlock.vue').default),
+  VariableBlock: markRaw(require('./VariableBlock.vue').default),
+  ComparisonOperatorBlock: markRaw(require('./ComparisonOperatorBlock.vue').default),
+  ComparisonLogicBlock: markRaw(require('./ComparisonLogicBlock.vue').default),
+  RepeatBlock: markRaw(require('./RepeatBlock.vue').default),
+  UnknownBlock: markRaw(require('./UnknownBlock.vue').default),
+};

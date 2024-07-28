@@ -65,24 +65,6 @@ const state: BlocksState = {
       ]
     },
     {
-      id: 'changeVariable',
-      type: 'changeVariable',
-      label: 'Change Variable',
-      color: '#FFA500',
-      inputs: [
-        {
-          name: 'variable',
-          type: 'string',
-          default: ''
-        },
-        {
-          name: 'value',
-          type: 'number',
-          default: "0"
-        }
-      ]
-    },
-    {
       id: 'variable',
       type: 'variable',
       label: 'Variable',
@@ -108,6 +90,19 @@ const state: BlocksState = {
       label: 'Comparison Logic',
       color: '#d850fa',
       inputs: [],
+    },
+    {
+      id: 'repeat',
+      type: 'repeat',
+      label: 'Repeat',
+      color: '#9C27B0', // You can choose a different color if you prefer
+      inputs: [
+        {
+          name: 'repeatCount',
+          type: 'number',
+          default: '1'
+        }
+      ]
     }
   ]
 };

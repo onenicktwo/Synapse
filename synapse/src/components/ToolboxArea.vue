@@ -6,10 +6,10 @@
     <div class="toolbox-content">
       <div v-for="block in blocks" :key="block.id" class="toolbox-item">
         <component 
-          :is="getBlockComponent(block.type)"
-          :block="block"
-          :isInWorkspace="false"
-        />
+  :is="getBlockComponent(block.type)"
+  :block="block"
+  :isInWorkspace="false"
+/>
       </div>
     </div>
   </div>
@@ -18,25 +18,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { mapGetters } from 'vuex';
-import PrintBlock from './blocks/PrintBlock.vue';
-import IfThenBlock from './blocks/IfThenBlock.vue';
-import VariableBlock from './blocks/VariableBlock.vue';
-import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; 
-import { Block } from './blocks/types';
+import { Block, blockComponents } from './blocks/types';
 import { getBlockComponent } from './blockUtils';
-import ComparisonOperatorBlock from './blocks/ComparisonOperatorBlock.vue';
-import ComparisonLogicBlock from './blocks/ComparisonLogicBlock.vue';
 
 export default defineComponent({
   name: 'ToolboxArea',
-  components: {
-    PrintBlock,
-    IfThenBlock,
-    VariableBlock,
-    CreateVariableBlock,
-    ComparisonOperatorBlock,
-    ComparisonLogicBlock
-  },
+  components: blockComponents,
   computed: {
     ...mapGetters('blocks', ['getAllBlocks']),
     blocks(): Block[] {

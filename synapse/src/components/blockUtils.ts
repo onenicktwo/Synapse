@@ -1,23 +1,5 @@
+import { Block, BlockComponentName, BlockTypeToComponentName } from "./blocks/types";
 
-
-export function getBlockComponent(type: string): string | null {
-    switch (type) {
-      case 'print':
-        return 'PrintBlock';
-      case 'ifThen':
-        return 'IfThenBlock';
-      case 'createVariable':
-        return 'CreateVariableBlock';
-      case 'changeVariable':
-        return 'ChangeVariableBlock';
-      case 'variable':
-        return 'VariableBlock';
-      case 'compareOperator':
-        return 'ComparisonOperatorBlock';
-      case 'compareLogic':
-        return 'ComparisonLogicBlock';
-      default:
-        console.error(`Unknown block type: ${type}`);
-        return null;
-    }
-  }
+export function getBlockComponent(type: Block['type']): BlockComponentName {
+  return (BlockTypeToComponentName[type as keyof typeof BlockTypeToComponentName] as BlockComponentName) || 'UnknownBlock';
+}

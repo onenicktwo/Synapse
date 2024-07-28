@@ -25,26 +25,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { mapGetters, mapActions } from 'vuex';
-import PrintBlock from './blocks/PrintBlock.vue';
-import IfThenBlock from './blocks/IfThenBlock.vue';
-import VariableBlock from './blocks/VariableBlock.vue'; // Import additional blocks
-import CreateVariableBlock from './blocks/CreateVariableBlock.vue'; // Import additional blocks
-import { Block } from './blocks/types';
+import { Block, blockComponents } from './blocks/types';
 import BlockInterpreter from './blocks/BlockInterpreter';
 import { getBlockComponent } from './blockUtils';
-import ComparisonOperatorBlock from './blocks/ComparisonOperatorBlock.vue';
-import ComparisonLogicBlock from './blocks/ComparisonLogicBlock.vue';
 
 export default defineComponent({
   name: 'WorkspaceArea',
-  components: {
-    PrintBlock,
-    IfThenBlock,
-    VariableBlock,
-    CreateVariableBlock,
-    ComparisonOperatorBlock,
-    ComparisonLogicBlock
-  },
+  components: blockComponents,
   data() {
     return {
       interpreter: new BlockInterpreter(),

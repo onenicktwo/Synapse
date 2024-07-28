@@ -1,65 +1,61 @@
 <template>
-    <div
-      class="block logical-operator-block"
-      :style="{ backgroundColor: block.color }"
-      draggable="true"
-      @dragstart="onDragStart"
-      @dragend="onDragEnd"
-    >
-      <div class="block-content">
-        <div class="input-container left" :class="{ 'has-block': leftBlock }">
-    <component
-      v-if="leftBlock"
-      :key="leftBlock.id"
-      :is="getBlockComponent(leftBlock.type)"
-      :block="leftBlock"
-      :isInWorkspace="true"
-      @remove="removeLeftBlock"
-      @update="updateLeftBlock"
-      draggable="true"
-      @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
-    />
-    <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
-      <span>Drop block here</span>
-    </div>
-  </div>
-        
-        <select v-model="selectedOperator" @change="updateBlock">
-          <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
-        </select>
-        
-        <div class="input-container right" :class="{ 'has-block': rightBlock }">
-    <component
-      v-if="rightBlock"
-      :key="rightBlock.id"
-      :is="getBlockComponent(rightBlock.type)"
-      :block="rightBlock"
-      :isInWorkspace="true"
-      @remove="removeRightBlock"
-      @update="updateRightBlock"
-      draggable="true"
-      @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
-    />
-    <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
-      <span>Drop block here</span>
-    </div>
-  </div>
+  <div
+    class="block logical-operator-block"
+    :style="{ backgroundColor: block.color }"
+    draggable="true"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
+  >
+    <div class="block-content">
+      <div class="input-container left" :class="{ 'has-block': leftBlock }">
+        <component
+          v-if="leftBlock"
+          :key="leftBlock.id"
+          :is="components[getBlockComponent(leftBlock.type)]"
+          :block="leftBlock"
+          :isInWorkspace="true"
+          @remove="removeLeftBlock"
+          @update="updateLeftBlock"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
+        />
+        <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
+          <span>Drop block here</span>
+        </div>
       </div>
-      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+      
+      <select v-model="selectedOperator" @change="updateBlock">
+        <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
+      </select>
+      
+      <div class="input-container right" :class="{ 'has-block': rightBlock }">
+        <component
+          v-if="rightBlock"
+          :key="rightBlock.id"
+          :is="components[getBlockComponent(rightBlock.type)]"
+          :block="rightBlock"
+          :isInWorkspace="true"
+          @remove="removeRightBlock"
+          @update="updateRightBlock"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
+        />
+        <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
+          <span>Drop block here</span>
+        </div>
+      </div>
     </div>
-  </template>
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+  </div>
+</template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
-import { Block, ComparisonLogicBlock as ComparisonLogicBlockType } from './types';
+import { Block, blockComponents, ComparisonLogicBlock as ComparisonLogicBlockType } from './types';
 import { getBlockComponent } from '../blockUtils';
-import ComparisonOperatorBlock from './ComparisonOperatorBlock.vue';
 
 export default defineComponent({
   name: 'ComparisonLogicBlock',
-  components: {
-    ComparisonOperatorBlock,
-  },
   props: {
     block: {
       type: Object as PropType<ComparisonLogicBlockType>,
@@ -72,6 +68,7 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
+    const components = blockComponents;
     const operators = ['&&', '||'] as const;
     const selectedOperator = ref(props.block.operator || '&&');
     const leftBlock = ref<Block | null>(props.block.leftBlock || null);
@@ -155,6 +152,7 @@ export default defineComponent({
       selectedOperator,
       leftBlock,
       rightBlock,
+      components,
       getBlockComponent,
       removeLeftBlock,
       removeRightBlock,
