@@ -2,7 +2,6 @@
   <div class="output-area">
     <div class="output-header">
       <h2 class="output-title">Output</h2>
-      <button @click="clearOutput" class="clear-button" v-if="output.length > 0">Clear</button>
     </div>
     <div class="output-content" ref="outputContent">
       <pre v-if="output.length > 0">{{ formattedOutput }}</pre>
@@ -24,10 +23,6 @@ export default defineComponent({
     const output = computed(() => store.getters['getOutput']);
     const formattedOutput = computed(() => output.value.join('\n'));
 
-    const clearOutput = () => {
-      store.dispatch('clearOutput');
-    };
-
     watch(output, () => {
       if (outputContent.value) {
         outputContent.value.scrollTop = outputContent.value.scrollHeight;
@@ -37,7 +32,6 @@ export default defineComponent({
     return {
       output,
       formattedOutput,
-      clearOutput,
       outputContent,
     };
   },

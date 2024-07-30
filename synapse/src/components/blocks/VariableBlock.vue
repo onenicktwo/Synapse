@@ -6,14 +6,14 @@
     @dragend="onDragEnd"
   >
     <div class="variable-title">Variable</div>
-    <select v-model="selectedVariable" @change="updateVariable">
+    <select v-model="selectedVariableId" @change="updateVariable">
       <option value="">Select a variable</option>
       <option v-for="variable in variables" :key="variable.id" :value="variable.id">
         {{ variable.name }}: {{ variable.value }}
       </option>
     </select>
     <input 
-      v-if="selectedVariable" 
+      v-if="selectedVariableId" 
       type="number" 
       :value="selectedVariableValue" 
       @input="updateVariableValue"
@@ -23,47 +23,61 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref, computed, PropType } from 'vue';
 import { useStore } from 'vuex';
+import { VariableBlock as VariableBlockType } from './types';
 
 export default defineComponent({
   name: 'VariableBlock',
   props: {
+    block: {
+      type: Object as PropType<VariableBlockType>,
+      required: true
+    },
     isInWorkspace: {
       type: Boolean,
       default: false
     }
   },
-  emits: ['remove'],
-  setup() {
+  emits: ['remove', 'update'],
+  setup(props, { emit }) {
     const store = useStore();
-    const selectedVariable = ref('');
+    const selectedVariableId = ref(props.block.variableId || '');
 
     const variables = computed(() => store.getters['variables/getAllVariables']);
 
     const selectedVariableValue = computed(() => {
-      const variable = store.getters['variables/getVariableById'](selectedVariable.value);
+      const variable = store.getters['variables/getVariableById'](selectedVariableId.value);
       return variable ? variable.value : null;
     });
 
+    const updateBlock = () => {
+      const updatedBlock: VariableBlockType = {
+        ...props.block,
+        variableId: selectedVariableId.value 
+      };
+      emit('update', updatedBlock);
+    };
+
     const updateVariable = () => {
-      // You can add any additional logic here when a variable is selected
+      updateBlock();
     };
 
     const updateVariableValue = (event: Event) => {
       const value = Number((event.target as HTMLInputElement).value);
-      if (!isNaN(value)) {
+      if (!isNaN(value) && selectedVariableId.value) {
         store.dispatch('variables/updateVariable', {
-          id: selectedVariable.value,
-          name: store.getters['variables/getVariableById'](selectedVariable.value).name,
+          id: selectedVariableId.value,
+          name: store.getters['variables/getVariableById'](selectedVariableId.value).name,
           value: value
         });
+        updateBlock(); // Update the block after updating the variable
       }
     };
 
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
-        event.dataTransfer.setData('text/plain', JSON.stringify({ type: 'variable', id: selectedVariable.value }));
+        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
         event.dataTransfer.effectAllowed = 'copy';
       }
     };
@@ -73,7 +87,7 @@ export default defineComponent({
     };
 
     return {
-      selectedVariable,
+      selectedVariableId,
       variables,
       selectedVariableValue,
       updateVariable,

@@ -38,7 +38,7 @@ class BlockInterpreter {
   }
 
   private exectueVariableBlock(block: VariableBlock) {
-    return store.getters['variables/getVariableById'](block.id).value;
+    return store.getters['variables/getVariableById'](block.variableId).value;
   }
 
   private executeRepeatBlock(block: RepeatBlock): void {
@@ -75,7 +75,7 @@ class BlockInterpreter {
 
   private executePrintBlock(block: PrintBlock): void {
     if (block.nestedBlock != null) {
-      return this.executeBlock(block.nestedBlock);
+      this.output.push(this.executeBlock(block.nestedBlock));
     } else {
       const value = this.evaluateInput(block.inputs[0]);
       this.output.push(String(value));

@@ -56,7 +56,7 @@ export default defineComponent({
     const inputValue = ref(props.block.inputs[0].default || '');
     const nestedBlock = ref<Block | null>(props.block.nestedBlock|| null);
 
-    const allowedInputBlocks = ['variable'];
+    const allowedInputBlocks = ['variable', 'mathOperator'];
 
     const updateBlock = () => {
       const updatedBlock: PrintBlockType = {
