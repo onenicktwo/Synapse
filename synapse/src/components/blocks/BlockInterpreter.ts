@@ -51,8 +51,20 @@ class BlockInterpreter {
   }
 
   private executeMathOperatorBlock(block: MathOperatorBlock): number {
-    const leftValue = this.evaluateInput(block.leftBlock || block.leftInput);
-    const rightValue = this.evaluateInput(block.rightBlock || block.rightInput);
+    let leftValue: any; 
+    let rightValue: any; 
+  
+    if (block.leftBlock) {
+      leftValue = this.executeBlock(block.leftBlock); 
+    } else  {
+      leftValue = block.leftInput;
+    }
+  
+    if (block.rightBlock) {
+      rightValue = this.executeBlock(block.rightBlock);
+    } else  {
+      rightValue = block.rightInput;
+    }
     
     switch (block.operator) {
       case '+':
