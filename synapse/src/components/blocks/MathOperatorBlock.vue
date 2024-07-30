@@ -28,11 +28,11 @@
           >
         </div>
       </div>
-      
+
       <select v-model="selectedOperator" @change="updateBlock" class="operator-select">
         <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
       </select>
-      
+
       <div class="input-container right" :class="{ 'has-block': rightBlock }">
         <component
           v-if="rightBlock"
@@ -61,11 +61,12 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
-import { Block, MathOperatorBlock as MathOperatorBlockType } from './types';
+import { Block, MathOperatorBlock as MathOperatorBlockType, blockComponents } from './types'; 
 import { getBlockComponent } from '../blockUtils';
 
 export default defineComponent({
   name: 'MathOperatorBlock',
+  components: blockComponents, 
   props: {
     block: {
       type: Object as PropType<MathOperatorBlockType>,
@@ -85,7 +86,7 @@ export default defineComponent({
     const leftInput = ref(props.block.leftInput || '');
     const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable', 'mathOperator'];
+    const allowedInputBlocks = ['variable', 'mathOperator', 'print', 'ifThen', 'createVariable', 'repeat']; // Allow more block types
 
     const updateBlock = () => {
       const updatedBlock: MathOperatorBlockType = {
