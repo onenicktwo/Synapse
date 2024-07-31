@@ -11,7 +11,7 @@
         <component
           v-if="leftBlock"
           :key="leftBlock.id"
-          :is="getBlockComponent(leftBlock.type)"
+          :is="components[getBlockComponent(leftBlock.type)]"
           :block="leftBlock"
           :isInWorkspace="true"
           @remove="removeLeftBlock"
@@ -37,7 +37,7 @@
         <component
           v-if="rightBlock"
           :key="rightBlock.id"
-          :is="getBlockComponent(rightBlock.type)"
+          :is="components[getBlockComponent(rightBlock.type)]"
           :block="rightBlock"
           :isInWorkspace="true"
           @remove="removeRightBlock"
@@ -65,8 +65,7 @@ import { Block, MathOperatorBlock as MathOperatorBlockType, blockComponents } fr
 import { getBlockComponent } from '../blockUtils';
 
 export default defineComponent({
-  name: 'MathOperatorBlock',
-  components: blockComponents, 
+  name: 'MathOperatorBlock', 
   props: {
     block: {
       type: Object as PropType<MathOperatorBlockType>,
@@ -79,6 +78,7 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
+    const components = blockComponents;
     const operators = ['+', '-', '*', '/', '%'];
     const selectedOperator = ref(props.block.operator || '+');
     const leftBlock = ref<Block | null>(props.block.leftBlock || null);
@@ -160,6 +160,7 @@ export default defineComponent({
     };
 
     return {
+      components,
       operators,
       selectedOperator,
       leftBlock,

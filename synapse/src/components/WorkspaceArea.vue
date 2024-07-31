@@ -26,15 +26,16 @@
 import { defineComponent } from 'vue';
 import { mapGetters, mapActions } from 'vuex';
 import { Block, blockComponents } from './blocks/types';
-import BlockInterpreter from './blocks/BlockInterpreter';
+import JavaBlockInterpreter from './blocks/JavaBlockInterpreter';
 import { getBlockComponent } from './blockUtils';
+import axios from 'axios';
 
 export default defineComponent({
   name: 'WorkspaceArea',
   components: blockComponents,
   data() {
     return {
-      interpreter: new BlockInterpreter(),
+      interpreter: new JavaBlockInterpreter(),
     };
   },
   computed: {
@@ -61,9 +62,25 @@ export default defineComponent({
         this.addBlock(newBlock);
       }
     },
-    executeBlocks() {
-      const output = this.interpreter.execute(this.workspaceBlocks);
-      this.setOutput(output);
+    async executeJavaCode(javaCode: string): Promise<string> {
+    try {
+      console.log(javaCode);
+      const response = await axios.post('http://localhost:3000/execute', { code: javaCode });
+      return response.data.output;
+    } catch (error) {
+      console.error('Error executing Java code:', error);
+      throw error;
+    }
+    },
+    async executeBlocks() {
+      try {
+      const javaCode = this.interpreter.generateJavaCode(this.workspaceBlocks);
+      const output = await this.executeJavaCode(javaCode);
+      this.setOutput(output.split('\n'));
+    } catch (error) {
+      console.error('Error executing blocks:', error);
+      this.setOutput(['Error executing blocks. Please check the console for details.']);
+    }
     },
     getBlockComponent
   },
