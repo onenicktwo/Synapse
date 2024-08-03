@@ -1,2 +1,5 @@
 *.java
 *.class
+synapse/java_files/*
+!synapse/java_files/.gitkeep
+synapse/java_files/

@@ -21,9 +21,5 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
-*.java
-*.class
 
-#All generated java files
-synapse/java_files/*
-!synapse/java_files/.gitkeep
+synapse/java_files/
