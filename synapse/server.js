@@ -51,7 +51,6 @@ app.post('/execute', (req, res) => {
     currentExecutions++;
 
     const dockerCommand = `docker run --rm -v "${javaFolder}:/app" --memory=512m --cpus=0.5 java-runner`;
-
     const timeout = setTimeout(() => {
       exec(`docker stop $(docker ps -q --filter ancestor=java-runner)`);
       currentExecutions--;
