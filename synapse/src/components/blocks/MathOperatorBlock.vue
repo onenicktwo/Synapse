@@ -1,7 +1,7 @@
 <template>
   <div
     class="block math-operator-block"
-    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace, 'nested': isNested }"
     :style="blockStyle"
     draggable="true"
     @dragstart="onDragStart"
@@ -92,6 +92,10 @@ export default defineComponent({
     isInWorkspace: {
       type: Boolean,
       default: false,
+    },
+    isNested: {
+      type: Boolean,
+      default: false
     },
   },
   emits: ['remove', 'update'],
@@ -297,6 +301,17 @@ font-size: 0.8em;
   display: flex;
   align-items: center;
   overflow: visible;
+  width: auto;
+  min-width: 80px;
+}
+
+.nested .input-container {
+  min-width: unset;
+  width: 45%; 
+}
+
+.nested .operator-select {
+  width: 10%; 
 }
 
 .input-container.has-block {
