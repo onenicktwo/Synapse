@@ -1,3 +1,4 @@
+<!---
 <template>
   <div
     class="block if-then-block"
@@ -47,24 +48,24 @@ export default defineComponent({
       if (nestedBlocksContainer.value) {
         // Adjust height based on content
         const resizeObserver = new ResizeObserver(() => {
-          nestedBlocksContainer.value!.parentElement!.style.height = 'auto'; 
+          nestedBlocksContainer.value!.parentElement!.style.height = 'auto';
         });
 
         // Observe all direct children of the container
         nestedBlocksContainer.value.childNodes.forEach((childNode) => {
-          resizeObserver.observe(childNode as HTMLElement); 
+          resizeObserver.observe(childNode as HTMLElement);
         });
       }
 
       if (conditionBlocksContainer.value) {
         // Adjust height based on content
         const resizeObserver = new ResizeObserver(() => {
-          conditionBlocksContainer.value!.style.height = 'auto'; 
+          conditionBlocksContainer.value!.style.height = 'auto';
         });
 
         // Observe all direct children of the container
         conditionBlocksContainer.value.childNodes.forEach((childNode) => {
-          resizeObserver.observe(childNode as HTMLElement); 
+          resizeObserver.observe(childNode as HTMLElement);
         });
       }
     });
@@ -177,3 +178,4 @@ export default defineComponent({
   color: #ff0000;
 }
 </style>
+-->

@@ -31,7 +31,7 @@ import { getBlockComponent } from './blockUtils';
 import axios from 'axios';
 
 export default defineComponent({
-  name: 'WorkspaceArea',
+  name: 'WorkspaceArea', 
   components: blockComponents,
   data() {
     return {
