@@ -60,7 +60,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue';
+import { computed, defineComponent, PropType, ref } from 'vue';
 import { Block, MathOperatorBlock as MathOperatorBlockType, blockComponents } from './types'; 
 import { getBlockComponent } from '../blockUtils';
 
@@ -78,7 +78,7 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
-    const components = blockComponents;
+    const components = computed(() => blockComponents);
     const operators = ['+', '-', '*', '/', '%'];
     const selectedOperator = ref(props.block.operator || '+');
     const leftBlock = ref<Block | null>(props.block.leftBlock || null);

@@ -78,6 +78,19 @@ const state: BlocksState = {
       ]
     },
     {
+      id: 'variableChange',
+      type: 'variableChange',
+      label: 'Variable Change',
+      color: '#00BFFF',
+      inputs: [
+        {
+          name: 'variable',
+          type: 'string',
+          default: ''
+        }
+      ]
+    },
+    {
       id: 'compareOperator',
       type: 'compareOperator',
       label: 'Comparison Operator',

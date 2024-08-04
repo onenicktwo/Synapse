@@ -9,21 +9,15 @@
     <select v-model="selectedVariableId" @change="updateVariable">
       <option value="">Select a variable</option>
       <option v-for="variable in variables" :key="variable.id" :value="variable.id">
-        {{ variable.name }}: {{ variable.value }}
+        {{ variable.name }}
       </option>
     </select>
-    <input 
-      v-if="selectedVariableId" 
-      type="number" 
-      :value="selectedVariableValue" 
-      @input="updateVariableValue"
-    >
     <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, PropType, watch } from 'vue';
+import { defineComponent, ref, computed, PropType } from 'vue';
 import { useStore } from 'vuex';
 import { VariableBlock as VariableBlockType } from './types';
 
@@ -63,18 +57,6 @@ export default defineComponent({
       updateBlock();
     };
 
-    const updateVariableValue = (event: Event) => {
-      const value = Number((event.target as HTMLInputElement).value);
-      if (!isNaN(value) && selectedVariableId.value) {
-        store.dispatch('variables/updateVariable', {
-          id: selectedVariableId.value,
-          name: store.getters['variables/getVariableById'](selectedVariableId.value).name,
-          value: value
-        });
-        updateBlock();
-      }
-    };
-
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
@@ -86,21 +68,11 @@ export default defineComponent({
       console.log('Drag ended at:', event.clientX, event.clientY);
     };
 
-    // Watch for changes in the variables store
-    watch(() => store.state.variables.variables, () => {
-      // If the selected variable no longer exists, reset the selection
-      if (selectedVariableId.value && !store.getters['variables/getVariableById'](selectedVariableId.value)) {
-        selectedVariableId.value = '';
-        updateBlock();
-      }
-    });
-
     return {
       selectedVariableId,
       variables,
       selectedVariableValue,
       updateVariable,
-      updateVariableValue,
       onDragStart,
       onDragEnd,
     };

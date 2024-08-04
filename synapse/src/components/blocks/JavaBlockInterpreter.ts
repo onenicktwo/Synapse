@@ -25,6 +25,12 @@ class JavaBlockInterpreter {
       case 'createVariable':
         this.generateCreateVariableBlockCode(block as CreateVariableBlock);
         break;
+      case 'compareOperator':
+        this.generateComparisonOperatorCode(block as ComparisonOperatorBlock);
+        break;
+      case 'compareLogic':
+        this.generateComparisonLogicCode(block as ComparisonLogicBlock);
+        break;
       case 'repeat':
         this.generateRepeatBlockCode(block as RepeatBlock);
         break;
@@ -34,12 +40,19 @@ class JavaBlockInterpreter {
       case 'variable':
         this.generateVariableBlockCode(block as VariableBlock);
         break;
+      default:
+        console.error(`Unknown block type: ${block.type}`);
     }
   }
 
   private generatePrintBlockCode(block: PrintBlock): void {
-    const value = this.evaluateInput(block.inputs[0]);
-    this.addLine(`System.out.println("${value}");`);
+    let value;
+    if (block.nestedBlock) {
+      value = this.generateBlockCode(block.nestedBlock);
+    } else {
+      value = '"' + this.evaluateInput(block.inputs[0]) + '"';
+    }
+    this.addLine(`System.out.println(${value});`);
   }
 
   private generateIfThenBlockCode(block: IfThenBlock): void {
@@ -53,7 +66,6 @@ class JavaBlockInterpreter {
       this.indentationLevel -= 2;
       this.addLine('}');
     } else {
-      // Handle the case where there's no condition
       console.warn('If-Then block has no condition');
     }
   }
@@ -63,6 +75,7 @@ class JavaBlockInterpreter {
     const value = this.evaluateInput(block.inputs[1]);
     this.addLine(`int ${name} = ${value};`);
   }
+  
 
   private generateRepeatBlockCode(block: RepeatBlock): void {
     this.addLine(`for (int i = 0; i < ${block.repeatCount}; i++) {`);
@@ -75,21 +88,16 @@ class JavaBlockInterpreter {
   }
 
   private generateMathOperatorBlockCode(block: MathOperatorBlock): string {
-    const left = block.leftBlock ? this.generateMathOperatorBlockCode(block.leftBlock as MathOperatorBlock) : block.leftInput;
-    const right = block.rightBlock ? this.generateMathOperatorBlockCode(block.rightBlock as MathOperatorBlock) : block.rightInput;
+    const left = block.leftBlock ? this.generateMathOperatorBlockCode(block.leftBlock as MathOperatorBlock) : this.evaluateInput(block.leftInput);
+    const right = block.rightBlock ? this.generateMathOperatorBlockCode(block.rightBlock as MathOperatorBlock) : this.evaluateInput(block.rightInput);
     return `(${left} ${block.operator} ${right})`;
   }
 
   private generateVariableBlockCode(block: VariableBlock): string {
-    return store.getters['variables/getVariableById'](block.variableId).name;
+    return block.variableId;
   }
 
-  private generateConditionCode(block: Block | null): string {
-    if (!block) {
-      console.warn('Null block in condition');
-      return 'true'; // Default to true if the block is null
-    }
-
+  private generateConditionCode(block: Block): string {
     if (block.type === 'compareOperator') {
       return this.generateComparisonOperatorCode(block as ComparisonOperatorBlock);
     } else if (block.type === 'compareLogic') {
@@ -101,14 +109,17 @@ class JavaBlockInterpreter {
   }
 
   private generateComparisonOperatorCode(block: ComparisonOperatorBlock): string {
-    const left = this.evaluateInput(block.leftBlock || block.leftInput);
-    const right = this.evaluateInput(block.rightBlock || block.rightInput);
+    const left = block.leftBlock ? this.generateBlockCode(block.leftBlock) : this.evaluateInput(block.leftInput);
+    const right = block.rightBlock ? this.generateBlockCode(block.rightBlock) : this.evaluateInput(block.rightInput);
     return `${left} ${block.operator} ${right}`;
   }
 
   private generateComparisonLogicCode(block: ComparisonLogicBlock): string {
-    const left = block.leftBlock ? this.generateConditionCode(block.leftBlock) : 'true';
-    const right = block.rightBlock ? this.generateConditionCode(block.rightBlock) : 'true';
+    if (!block.leftBlock || !block.rightBlock) {
+      return 'false';
+    }
+    const left = this.generateConditionCode(block.leftBlock);
+    const right = this.generateConditionCode(block.rightBlock);
     return `(${left} ${block.operator} ${right})`;
   }
 
