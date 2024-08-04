@@ -1,63 +1,63 @@
 <template>
-    <div
-      class="block comparison-operator-block"
-      :style="{ backgroundColor: block.color }"
-      draggable="true"
-      @dragstart="onDragStart"
-      @dragend="onDragEnd"
-    >
-      <div class="block-content">
-        <div class="input-container left" :class="{ 'has-block': leftBlock }">
-          <component
-            v-if="leftBlock"
-            :key="leftBlock.id"
-            :is="getBlockComponent(leftBlock.type)"
-            :block="leftBlock"
-            :isInWorkspace="true"
-            @remove="removeLeftBlock"
-            @update="updateLeftBlock"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
-          />
-          <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
-            <input 
-              type="text" 
-              v-model="leftInput" 
-              placeholder="Left input"
-              @input="updateBlock"
-            >
-          </div>
-        </div>
-        
-        <select v-model="selectedOperator" @change="updateBlock">
-          <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
-        </select>
-        
-        <div class="input-container right" :class="{ 'has-block': rightBlock }">
-          <component
-            v-if="rightBlock"
-            :key="rightBlock.id"
-            :is="getBlockComponent(rightBlock.type)"
-            :block="rightBlock"
-            :isInWorkspace="true"
-            @remove="removeRightBlock"
-            @update="updateRightBlock"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
-          />
-          <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
-            <input 
-              type="text" 
-              v-model="rightInput" 
-              placeholder="Right input"
-              @input="updateBlock"
-            >
-          </div>
+  <div
+    class="block comparison-operator-block"
+    :style="{ backgroundColor: block.color }"
+    draggable="true"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
+  >
+    <div class="block-content">
+      <div class="input-container left" :class="{ 'has-block': leftBlock }">
+        <component
+          v-if="leftBlock"
+          :key="leftBlock.id"
+          :is="getBlockComponent(leftBlock.type)"
+          :block="leftBlock"
+          :isInWorkspace="true"
+          @remove="removeLeftBlock"
+          @update="updateLeftBlock"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
+        />
+        <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
+          <input 
+            type="text" 
+            v-model="leftInput" 
+            placeholder="Left input"
+            @input="updateBlock"
+          >
         </div>
       </div>
-      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+      
+      <select v-model="selectedOperator" @change="updateBlock">
+        <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
+      </select>
+      
+      <div class="input-container right" :class="{ 'has-block': rightBlock }">
+        <component
+          v-if="rightBlock"
+          :key="rightBlock.id"
+          :is="getBlockComponent(rightBlock.type)"
+          :block="rightBlock"
+          :isInWorkspace="true"
+          @remove="removeRightBlock"
+          @update="updateRightBlock"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
+        />
+        <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
+          <input 
+            type="text" 
+            v-model="rightInput" 
+            placeholder="Right input"
+            @input="updateBlock"
+          >
+        </div>
+      </div>
     </div>
-  </template>
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+  </div>
+</template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
@@ -65,217 +65,221 @@ import { Block, ComparisonOperatorBlock as ComparisonOperatorBlockType } from '.
 import { getBlockComponent } from '../blockUtils';
 
 export default defineComponent({
-  name: 'ComparisonOperatorBlock',
-  props: {
-    block: {
-      type: Object as PropType<ComparisonOperatorBlockType>,
-      required: true,
-    },
-    isInWorkspace: {
-      type: Boolean,
-      default: false,
-    },
+name: 'ComparisonOperatorBlock',
+props: {
+  block: {
+    type: Object as PropType<ComparisonOperatorBlockType>,
+    required: true,
   },
-  emits: ['remove', 'update'],
-  setup(props, { emit }) {
-    const operators = ['==', '!=', '<', '<=', '>', '>='];
-    const selectedOperator = ref(props.block.operator || '==');
-    const leftBlock = ref<Block | null>(props.block.leftBlock || null);
-    const rightBlock = ref<Block | null>(props.block.rightBlock || null);
-    const leftInput = ref(props.block.leftInput || '');
-    const rightInput = ref(props.block.rightInput || '');
+  isInWorkspace: {
+    type: Boolean,
+    default: false,
+  },
+  isNested: {
+    type: Boolean,
+    default: false
+  },
+},
+emits: ['remove', 'update'],
+setup(props, { emit }) {
+  const operators = ['==', '!=', '<', '<=', '>', '>='];
+  const selectedOperator = ref(props.block.operator || '==');
+  const leftBlock = ref<Block | null>(props.block.leftBlock || null);
+  const rightBlock = ref<Block | null>(props.block.rightBlock || null);
+  const leftInput = ref(props.block.leftInput || '');
+  const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable'];
+  const allowedInputBlocks = ['variable'];
 
-    const updateBlock = () => {
-      const updatedBlock: ComparisonOperatorBlockType = {
-        ...props.block,
-        operator: selectedOperator.value,
-        leftBlock: leftBlock.value,
-        rightBlock: rightBlock.value,
-        leftInput: leftInput.value,
-        rightInput: rightInput.value,
-      };
-      emit('update', updatedBlock);
+  const updateBlock = () => {
+    const updatedBlock: ComparisonOperatorBlockType = {
+      ...props.block,
+      operator: selectedOperator.value,
+      leftBlock: leftBlock.value,
+      rightBlock: rightBlock.value,
+      leftInput: leftInput.value,
+      rightInput: rightInput.value,
     };
+    emit('update', updatedBlock);
+  };
 
-    const removeLeftBlock = () => {
-      leftBlock.value = null;
-      updateBlock();
-    };
+  const removeLeftBlock = () => {
+    leftBlock.value = null;
+    updateBlock();
+  };
 
-    const removeRightBlock = () => {
-      rightBlock.value = null;
-      updateBlock();
-    };
+  const removeRightBlock = () => {
+    rightBlock.value = null;
+    updateBlock();
+  };
 
-    const updateLeftBlock = (updatedBlock: Block) => {
-      leftBlock.value = updatedBlock;
-      updateBlock();
-    };
+  const updateLeftBlock = (updatedBlock: Block) => {
+    leftBlock.value = updatedBlock;
+    updateBlock();
+  };
 
-    const updateRightBlock = (updatedBlock: Block) => {
-      rightBlock.value = updatedBlock;
-      updateBlock();
-    };
+  const updateRightBlock = (updatedBlock: Block) => {
+    rightBlock.value = updatedBlock;
+    updateBlock();
+  };
 
-    const handleInputDrop = (event: DragEvent, side: 'left' | 'right') => {
-      event.preventDefault();
-      event.stopPropagation();
-      if (event.dataTransfer) {
-        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-        if (allowedInputBlocks.includes(blockData.type)) {
-          const newBlock: Block = {
-            ...blockData,
-            id: Date.now().toString()
-          };
-          if (side === 'left') {
-            leftBlock.value = newBlock;
-          } else {
-            rightBlock.value = newBlock;
-          }
-          updateBlock();
+  const handleInputDrop = (event: DragEvent, side: 'left' | 'right') => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+      if (allowedInputBlocks.includes(blockData.type)) {
+        const newBlock: Block = {
+          ...blockData,
+          id: Date.now().toString()
+        };
+        if (side === 'left') {
+          leftBlock.value = newBlock;
+        } else {
+          rightBlock.value = newBlock;
         }
+        updateBlock();
       }
-    };
+    }
+  };
 
-    const handleInputDragStart = (event: DragEvent, side: 'left' | 'right') => {
-      const block = side === 'left' ? leftBlock.value : rightBlock.value;
-      if (block) {
-        event.dataTransfer?.setData('text/plain', JSON.stringify(block));
-        event.dataTransfer!.effectAllowed = 'copy';
-      }
-    };
+  const handleInputDragStart = (event: DragEvent, side: 'left' | 'right') => {
+    const block = side === 'left' ? leftBlock.value : rightBlock.value;
+    if (block) {
+      event.dataTransfer?.setData('text/plain', JSON.stringify(block));
+      event.dataTransfer!.effectAllowed = 'copy';
+    }
+  };
 
-    const onDragStart = (event: DragEvent) => {
-      if (event.dataTransfer) {
-        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-        event.dataTransfer.effectAllowed = 'copy';
-      }
-    };
+  const onDragStart = (event: DragEvent) => {
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+      event.dataTransfer.effectAllowed = 'copy';
+    }
+  };
 
-    const onDragEnd = (event: DragEvent) => {
-      console.log('Drag ended at:', event.clientX, event.clientY);
-    };
+  const onDragEnd = (event: DragEvent) => {
+    console.log('Drag ended at:', event.clientX, event.clientY);
+  };
 
-    return {
-      operators,
-      selectedOperator,
-      leftBlock,
-      rightBlock,
-      leftInput,
-      rightInput,
-      getBlockComponent,
-      removeLeftBlock,
-      removeRightBlock,
-      updateLeftBlock,
-      updateRightBlock,
-      handleInputDrop,
-      handleInputDragStart,
-      onDragStart,
-      onDragEnd,
-      updateBlock,
-    };
-  }
+  return {
+    operators,
+    selectedOperator,
+    leftBlock,
+    rightBlock,
+    leftInput,
+    rightInput,
+    getBlockComponent,
+    removeLeftBlock,
+    removeRightBlock,
+    updateLeftBlock,
+    updateRightBlock,
+    handleInputDrop,
+    handleInputDragStart,
+    onDragStart,
+    onDragEnd,
+    updateBlock,
+  };
+}
 });
 </script>
 
 <style scoped>
 .logical-operator-block,
 .comparison-operator-block {
-  width: 250px; /* Fixed width */
-  padding: 10px;
-  border-radius: 5px;
-  cursor: move;
-  position: relative;
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+width: 250px; /* Fixed width */
+padding: 10px;
+border-radius: 5px;
+cursor: move;
+position: relative;
+margin-bottom: 10px;
+display: flex;
+flex-direction: column;
+box-sizing: border-box;
 }
 
 .block-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
+display: flex;
+align-items: center;
+justify-content: space-between;
+flex-wrap: nowrap;
 }
 
 .input-container {
-  width: 80px; /* Fixed width for input containers */
-  min-height: 30px;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
-  border-radius: 5px;
-  padding: 5px;
-  margin: 0 5px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+width: 80px; /* Fixed width for input containers */
+min-height: 30px;
+border: 2px dashed rgba(255, 255, 255, 0.5);
+border-radius: 5px;
+padding: 5px;
+margin: 0 5px;
+display: flex;
+align-items: center;
+overflow: hidden;
 }
 
 .input-container.has-block {
-  width: 80px; /* Keep the same width even when it has a block */
+width: 80px; /* Keep the same width even when it has a block */
 }
 
 .block-input {
-  width: 100%;
-  display: flex;
-  align-items: center;
+width: 100%;
+display: flex;
+align-items: center;
 }
 
 .block-input input,
 .block-input span {
-  width: 100%;
-  padding: 5px;
-  border: none;
-  border-radius: 3px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: black;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+width: 100%;
+padding: 5px;
+border: none;
+border-radius: 3px;
+background-color: rgba(255, 255, 255, 0.2);
+color: black;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
 }
 
 select {
-  width: 60px; /* Fixed width for select */
-  padding: 5px;
-  border: none;
-  border-radius: 3px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: black;
-  margin: 0 5px;
+width: 60px; /* Fixed width for select */
+padding: 5px;
+border: none;
+border-radius: 3px;
+background-color: rgba(255, 255, 255, 0.2);
+color: black;
+margin: 0 5px;
 }
 
 .remove-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  color: #ff0000;
+position: absolute;
+top: 5px;
+right: 5px;
+background: none;
+border: none;
+cursor: pointer;
+font-weight: bold;
+color: #ff0000;
 }
 
 /* Styles for nested blocks */
 .input-container .logical-operator-block,
 .input-container .comparison-operator-block {
-  width: 100%;
-  margin: 0;
+width: 100%;
+margin: 0;
 }
 
 .input-container .block-content {
-  flex-direction: column;
-  align-items: stretch;
+flex-direction: column;
+align-items: stretch;
 }
 
 .input-container .input-container {
-  width: 100%;
-  margin: 5px 0;
+width: 100%;
+margin: 5px 0;
 }
 
 .input-container select {
-  width: 100%;
-  margin: 5px 0;
+width: 100%;
+margin: 5px 0;
 }
 </style>

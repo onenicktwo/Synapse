@@ -1,12 +1,17 @@
 <template>
   <div
     class="block math-operator-block"
-    :style="{ backgroundColor: block.color }"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace, 'nested': isNested }"
+    :style="blockStyle"
     draggable="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <div class="block-content">
+    <div class="block-title">Math Operator</div>
+    <div v-if="!isInWorkspace" class="toolbox-preview">
+      A ⊕ B
+    </div>
+    <div v-else class="block-content">
       <div class="input-container left" :class="{ 'has-block': leftBlock }">
         <component
           v-if="leftBlock"
@@ -17,7 +22,7 @@
           @remove="removeLeftBlock"
           @update="updateLeftBlock"
           draggable="true"
-          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
+          @dragstart.stop="(event) => handleInputDragStart(event, 'left')"
         />
         <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
           <input 
@@ -28,11 +33,11 @@
           >
         </div>
       </div>
-      
+
       <select v-model="selectedOperator" @change="updateBlock" class="operator-select">
         <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
       </select>
-      
+
       <div class="input-container right" :class="{ 'has-block': rightBlock }">
         <component
           v-if="rightBlock"
@@ -43,7 +48,7 @@
           @remove="removeRightBlock"
           @update="updateRightBlock"
           draggable="true"
-          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
+          @dragstart.stop="(event) => handleInputDragStart(event, 'right')"
         />
         <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
           <input 
@@ -60,12 +65,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref } from 'vue';
+import { defineComponent, PropType, ref, computed } from 'vue';
 import { Block, MathOperatorBlock as MathOperatorBlockType } from './types';
 import { getBlockComponent } from '../blockUtils';
+import VariableBlock from './VariableBlock.vue';
+import PrintBlock from './PrintBlock.vue';
+import IfThenBlock from './IfThenBlock.vue';
+import CreateVariableBlock from './CreateVariableBlock.vue';
+import RepeatBlock from './RepeatBlock.vue';
 
 export default defineComponent({
   name: 'MathOperatorBlock',
+  components: {
+    VariableBlock,
+    PrintBlock,
+    IfThenBlock,
+    CreateVariableBlock,
+    RepeatBlock,
+    MathOperatorBlock: () => import('./MathOperatorBlock.vue'),
+  },
   props: {
     block: {
       type: Object as PropType<MathOperatorBlockType>,
@@ -74,6 +92,10 @@ export default defineComponent({
     isInWorkspace: {
       type: Boolean,
       default: false,
+    },
+    isNested: {
+      type: Boolean,
+      default: false
     },
   },
   emits: ['remove', 'update'],
@@ -85,7 +107,13 @@ export default defineComponent({
     const leftInput = ref(props.block.leftInput || '');
     const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable', 'mathOperator'];
+    const allowedInputBlocks = ['variable', 'mathOperator', 'print', 'ifThen', 'createVariable', 'repeat'];
+
+    const blockStyle = computed(() => {
+      return props.block && props.block.color
+        ? { backgroundColor: props.block.color }
+        : {};
+    });
 
     const updateBlock = () => {
       const updatedBlock: MathOperatorBlockType = {
@@ -141,9 +169,9 @@ export default defineComponent({
 
     const handleInputDragStart = (event: DragEvent, side: 'left' | 'right') => {
       const block = side === 'left' ? leftBlock.value : rightBlock.value;
-      if (block) {
-        event.dataTransfer?.setData('text/plain', JSON.stringify(block));
-        event.dataTransfer!.effectAllowed = 'copy';
+      if (block && event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', JSON.stringify(block));
+        event.dataTransfer.effectAllowed = 'copy';
       }
     };
 
@@ -165,6 +193,7 @@ export default defineComponent({
       rightBlock,
       leftInput,
       rightInput,
+      blockStyle,
       getBlockComponent,
       removeLeftBlock,
       removeRightBlock,
@@ -180,29 +209,90 @@ export default defineComponent({
 });
 </script>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <style scoped>
 .math-operator-block {
-  width: 250px;
-  padding: 10px;
-  border-radius: 5px;
-  cursor: move;
-  position: relative;
-  margin-bottom: 10px;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  background-color: #f8f9fa; /* Light background color */
+padding: 10px;
+border-radius: 5px;
+cursor: move;
+position: relative;
+margin-bottom: 10px;
+display: flex;
+flex-direction: column;
+box-sizing: border-box;
+background-color: #f8f9fa;
+}
+
+.block-title {
+font-weight: bold;
+margin-bottom: 10px;
+color: #333;
+}
+
+.math-operator-block.in-toolbox {
+width: 180px;
+font-size: 0.8em;
+}
+
+.math-operator-block.in-workspace {
+  width: auto;
+  min-width: 250px;
+  max-width: 100%;
+  font-size: 1em;
+}
+
+.toolbox-preview {
+  font-size: 1.2em;
+  text-align: center;
+  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
 }
 
 .block-content {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   flex-wrap: nowrap;
 }
 
 .input-container {
-  width: 80px;
+  flex: 1;
   min-height: 30px;
   border: 2px dashed rgba(0, 0, 0, 0.5);
   border-radius: 5px;
@@ -210,12 +300,27 @@ export default defineComponent({
   margin: 0 5px;
   display: flex;
   align-items: center;
-  overflow: hidden;
+  overflow: visible;
+  width: auto;
+  min-width: 80px;
+}
+
+.nested .input-container {
+  min-width: unset;
+  width: 45%; 
+}
+
+.nested .operator-select {
+  width: 10%; 
 }
 
 .input-container.has-block {
-  width: 80px;
-  border: 2px solid #007bff; /* Highlight border if a block is present */
+  width: auto;
+  border: 2px solid #007bff;
+}
+
+.input-container > * {
+  width: 100%;
 }
 
 .block-input {
@@ -236,6 +341,40 @@ export default defineComponent({
   border: none;
   cursor: pointer;
   font-weight: bold;
-  color: #ff0000; /* Red color for the delete button */
+  color: #ff0000;
+}
+
+/* Adjustments for toolbox */
+.in-toolbox .block-title {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.in-toolbox .toolbox-preview {
+  font-size: 1em;
+  padding: 3px;
+}
+
+.in-toolbox .input-container,
+.in-toolbox .operator-select {
+  display: none;
+}
+
+.in-workspace .toolbox-preview {
+  display: none;
+}
+
+.in-workspace .input-container {
+  min-height: 30px;
+  padding: 5px;
+}
+
+.in-workspace .operator-select {
+  display: block;
+  margin: 0 10px;
+}
+
+.in-workspace input {
+  font-size: 1em;
 }
 </style>
