@@ -76,6 +76,7 @@ export interface VariableBlock extends Block {
 export interface VariableChangeBlock extends Block {
   type: 'variable';
   variableId: string;
+  value: number;
 }
 
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 

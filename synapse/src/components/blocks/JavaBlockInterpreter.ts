@@ -1,5 +1,5 @@
 import store from "@/store";
-import { Block, PrintBlock, IfThenBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock, VariableBlock } from "./types";
+import { Block, PrintBlock, IfThenBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock, VariableBlock, VariableChangeBlock } from "./types";
 
 class JavaBlockInterpreter {
   private javaCode: string[] = [];
@@ -14,44 +14,30 @@ class JavaBlockInterpreter {
     return this.javaCode.join('\n');
   }
 
-  private generateBlockCode(block: Block): void {
+  private generateBlockCode(block: any): string | void {
     switch (block.type) {
       case 'print':
-        this.generatePrintBlockCode(block as PrintBlock);
-        break;
+        return this.generatePrintBlockCode(block as PrintBlock);
       case 'ifThen':
-        this.generateIfThenBlockCode(block as IfThenBlock);
-        break;
+        return this.generateIfThenBlockCode(block as IfThenBlock);
       case 'createVariable':
-        this.generateCreateVariableBlockCode(block as CreateVariableBlock);
-        break;
-      case 'compareOperator':
-        this.generateComparisonOperatorCode(block as ComparisonOperatorBlock);
-        break;
-      case 'compareLogic':
-        this.generateComparisonLogicCode(block as ComparisonLogicBlock);
-        break;
+        return this.generateCreateVariableBlockCode(block as CreateVariableBlock);
       case 'repeat':
-        this.generateRepeatBlockCode(block as RepeatBlock);
-        break;
+        return this.generateRepeatBlockCode(block as RepeatBlock);
       case 'mathOperator':
-        this.generateMathOperatorBlockCode(block as MathOperatorBlock);
-        break;
+        return this.generateMathOperatorBlockCode(block as MathOperatorBlock);
       case 'variable':
-        this.generateVariableBlockCode(block as VariableBlock);
-        break;
+        return this.generateVariableBlockCode(block as VariableBlock);
+      case 'variableChange':
+        return this.generateVariableChangeBlockCode(block as VariableChangeBlock);
       default:
-        console.error(`Unknown block type: ${block.type}`);
+        console.warn(`Unexpected block type: ${block.type}`);
+        break;
     }
   }
 
   private generatePrintBlockCode(block: PrintBlock): void {
-    let value;
-    if (block.nestedBlock) {
-      value = this.generateBlockCode(block.nestedBlock);
-    } else {
-      value = '"' + this.evaluateInput(block.inputs[0]) + '"';
-    }
+    const value = this.generateBlockCode(block.nestedBlock) as string;
     this.addLine(`System.out.println(${value});`);
   }
 
@@ -66,6 +52,7 @@ class JavaBlockInterpreter {
       this.indentationLevel -= 2;
       this.addLine('}');
     } else {
+      // Handle the case where there's no condition
       console.warn('If-Then block has no condition');
     }
   }
@@ -75,7 +62,6 @@ class JavaBlockInterpreter {
     const value = this.evaluateInput(block.inputs[1]);
     this.addLine(`int ${name} = ${value};`);
   }
-  
 
   private generateRepeatBlockCode(block: RepeatBlock): void {
     this.addLine(`for (int i = 0; i < ${block.repeatCount}; i++) {`);
@@ -88,16 +74,25 @@ class JavaBlockInterpreter {
   }
 
   private generateMathOperatorBlockCode(block: MathOperatorBlock): string {
-    const left = block.leftBlock ? this.generateMathOperatorBlockCode(block.leftBlock as MathOperatorBlock) : this.evaluateInput(block.leftInput);
-    const right = block.rightBlock ? this.generateMathOperatorBlockCode(block.rightBlock as MathOperatorBlock) : this.evaluateInput(block.rightInput);
+    const left = block.leftBlock ? this.generateMathOperatorBlockCode(block.leftBlock as MathOperatorBlock) : block.leftInput;
+    const right = block.rightBlock ? this.generateMathOperatorBlockCode(block.rightBlock as MathOperatorBlock) : block.rightInput;
     return `(${left} ${block.operator} ${right})`;
   }
 
   private generateVariableBlockCode(block: VariableBlock): string {
-    return block.variableId;
+    return store.getters['variables/getVariableById'](block.variableId).name;
   }
 
-  private generateConditionCode(block: Block): string {
+  private generateVariableChangeBlockCode(block: VariableChangeBlock) {
+    this.addLine(store.getters['variables/getVariableById'](block.variableId).name + ' = ' + block.value + ';');
+  }
+
+  private generateConditionCode(block: Block | null): string {
+    if (!block) {
+      console.warn('Null block in condition');
+      return 'true'; // Default to true if the block is null
+    }
+
     if (block.type === 'compareOperator') {
       return this.generateComparisonOperatorCode(block as ComparisonOperatorBlock);
     } else if (block.type === 'compareLogic') {
@@ -109,17 +104,14 @@ class JavaBlockInterpreter {
   }
 
   private generateComparisonOperatorCode(block: ComparisonOperatorBlock): string {
-    const left = block.leftBlock ? this.generateBlockCode(block.leftBlock) : this.evaluateInput(block.leftInput);
-    const right = block.rightBlock ? this.generateBlockCode(block.rightBlock) : this.evaluateInput(block.rightInput);
+    const left = this.evaluateInput(block.leftBlock || block.leftInput);
+    const right = this.evaluateInput(block.rightBlock || block.rightInput);
     return `${left} ${block.operator} ${right}`;
   }
 
   private generateComparisonLogicCode(block: ComparisonLogicBlock): string {
-    if (!block.leftBlock || !block.rightBlock) {
-      return 'false';
-    }
-    const left = this.generateConditionCode(block.leftBlock);
-    const right = this.generateConditionCode(block.rightBlock);
+    const left = block.leftBlock ? this.generateConditionCode(block.leftBlock) : 'true';
+    const right = block.rightBlock ? this.generateConditionCode(block.rightBlock) : 'true';
     return `(${left} ${block.operator} ${right})`;
   }
 
