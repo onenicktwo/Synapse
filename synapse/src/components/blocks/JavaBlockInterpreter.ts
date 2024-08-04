@@ -37,8 +37,13 @@ class JavaBlockInterpreter {
   }
 
   private generatePrintBlockCode(block: PrintBlock): void {
-    const value = this.generateBlockCode(block.nestedBlock) as string;
-    this.addLine(`System.out.println(${value});`);
+    if (block.nestedBlock != null) { 
+      const value = this.generateBlockCode(block.nestedBlock) as string;
+      this.addLine(`System.out.println(${value});`);
+    } else {
+      const value = this.evaluateInput(block.inputs[0]);
+      this.addLine(`System.out.println("${value}");`);
+    }
   }
 
   private generateIfThenBlockCode(block: IfThenBlock): void {
