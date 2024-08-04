@@ -48,7 +48,11 @@ export default defineComponent({
     isInWorkspace: {
       type: Boolean,
       default: false
-    }
+    },
+    isNested: {
+      type: Boolean,
+      default: false
+    },
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {

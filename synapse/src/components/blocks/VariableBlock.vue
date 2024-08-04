@@ -31,7 +31,11 @@ export default defineComponent({
     isInWorkspace: {
       type: Boolean,
       default: false
-    }
+    },
+    isNested: {
+      type: Boolean,
+      default: false
+    },
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
@@ -82,7 +86,8 @@ export default defineComponent({
 
 <style scoped>
 .variable-block {
-  width: 200px; /* Set a fixed width similar to PrintBlock */
+  width: 100%;
+  max-width: 200px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -107,10 +112,6 @@ export default defineComponent({
   border-radius: 3px;
   background-color: #ffab5e;
   color: white;
-}
-
-.variable-block select,
-.variable-block input {
   width: 100%;
 }
 
@@ -123,5 +124,15 @@ export default defineComponent({
   cursor: pointer;
   font-weight: bold;
   color: #ff0000;
+}
+
+:deep(.input-container) .variable-block {
+  width: 100%;
+  max-width: none;
+}
+
+:deep(.input-container) .variable-block select,
+:deep(.input-container) .variable-block input {
+  width: 100%;
 }
 </style>
