@@ -161,7 +161,7 @@ return {
 .if-then-block {
   padding: 10px;
   border-radius: 5px;
-  cursor: move;
+  cursor: move; 
   position: relative;
   margin-bottom: 10px;
   display: flex;
@@ -215,8 +215,8 @@ return {
   padding: 10px;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
+  cursor: pointer; 
 }
-
 .remove-btn {
   position: absolute;
   top: 5px;
@@ -248,4 +248,6 @@ return {
 .in-workspace .toolbox-preview {
   display: none;
 }
+
+
 </style>
