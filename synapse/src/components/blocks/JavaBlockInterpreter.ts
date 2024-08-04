@@ -61,7 +61,7 @@ class JavaBlockInterpreter {
   private generateCreateVariableBlockCode(block: CreateVariableBlock): void {
     const name = this.evaluateInput(block.inputs[0]);
     const value = this.evaluateInput(block.inputs[1]);
-    this.addLine(`String ${name} = ${value};`);
+    this.addLine(`int ${name} = ${value};`);
   }
 
   private generateRepeatBlockCode(block: RepeatBlock): void {
