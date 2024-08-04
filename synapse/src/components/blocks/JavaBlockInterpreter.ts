@@ -1,5 +1,5 @@
 import store from "@/store";
-import { Block, PrintBlock, IfThenBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock, VariableBlock } from "./types";
+import { Block, PrintBlock, IfThenBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock, VariableBlock, VariableChangeBlock } from "./types";
 
 class JavaBlockInterpreter {
   private javaCode: string[] = [];
@@ -14,32 +14,31 @@ class JavaBlockInterpreter {
     return this.javaCode.join('\n');
   }
 
-  private generateBlockCode(block: Block): void {
+  private generateBlockCode(block: any): string | void {
     switch (block.type) {
       case 'print':
-        this.generatePrintBlockCode(block as PrintBlock);
-        break;
+        return this.generatePrintBlockCode(block as PrintBlock);
       case 'ifThen':
-        this.generateIfThenBlockCode(block as IfThenBlock);
-        break;
+        return this.generateIfThenBlockCode(block as IfThenBlock);
       case 'createVariable':
-        this.generateCreateVariableBlockCode(block as CreateVariableBlock);
-        break;
+        return this.generateCreateVariableBlockCode(block as CreateVariableBlock);
       case 'repeat':
-        this.generateRepeatBlockCode(block as RepeatBlock);
-        break;
+        return this.generateRepeatBlockCode(block as RepeatBlock);
       case 'mathOperator':
-        this.generateMathOperatorBlockCode(block as MathOperatorBlock);
-        break;
+        return this.generateMathOperatorBlockCode(block as MathOperatorBlock);
       case 'variable':
-        this.generateVariableBlockCode(block as VariableBlock);
+        return this.generateVariableBlockCode(block as VariableBlock);
+      case 'variableChange':
+        return this.generateVariableChangeBlockCode(block as VariableChangeBlock);
+      default:
+        console.warn(`Unexpected block type: ${block.type}`);
         break;
     }
   }
 
   private generatePrintBlockCode(block: PrintBlock): void {
-    const value = this.evaluateInput(block.inputs[0]);
-    this.addLine(`System.out.println("${value}");`);
+    const value = this.generateBlockCode(block.nestedBlock) as string;
+    this.addLine(`System.out.println(${value});`);
   }
 
   private generateIfThenBlockCode(block: IfThenBlock): void {
@@ -82,6 +81,10 @@ class JavaBlockInterpreter {
 
   private generateVariableBlockCode(block: VariableBlock): string {
     return store.getters['variables/getVariableById'](block.variableId).name;
+  }
+
+  private generateVariableChangeBlockCode(block: VariableChangeBlock) {
+    this.addLine(store.getters['variables/getVariableById'](block.variableId).name + ' = ' + block.value + ';');
   }
 
   private generateConditionCode(block: Block | null): string {

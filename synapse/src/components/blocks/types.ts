@@ -73,10 +73,17 @@ export interface VariableBlock extends Block {
   variableId: string;
 }
 
-export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator';
+export interface VariableChangeBlock extends Block {
+  type: 'variable';
+  variableId: string;
+  value: number;
+}
+
+export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 
+| 'variableChange';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
-| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock';
+| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock';
 
 export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   print: 'PrintBlock',
@@ -86,7 +93,8 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   compareLogic: 'ComparisonLogicBlock',
   repeat: 'RepeatBlock',
   variable: 'VariableBlock',
-  mathOperator: 'MathOperatorBlock'
+  mathOperator: 'MathOperatorBlock',
+  variableChange: 'VariableChangeBlock'
 };
 
 export const blockComponents: Record<BlockComponentName, Component> = {
@@ -99,4 +107,5 @@ export const blockComponents: Record<BlockComponentName, Component> = {
   RepeatBlock: markRaw(require('./RepeatBlock.vue').default),
   UnknownBlock: markRaw(require('./UnknownBlock.vue').default),
   MathOperatorBlock: markRaw(require('./MathOperatorBlock.vue').default),
+  VariableChangeBlock: markRaw(require('./VariableChangeBlock.vue').default)
 };

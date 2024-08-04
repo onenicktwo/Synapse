@@ -5,13 +5,19 @@
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <div class="variable-title">Variable</div>
+    <div class="variable-title">Variable Change</div>
     <select v-model="selectedVariableId" @change="updateVariable">
       <option value="">Select a variable</option>
       <option v-for="variable in variables" :key="variable.id" :value="variable.id">
-        {{ variable.name }}
+        {{ variable.name }}: {{ variable.value }}
       </option>
     </select>
+    <input 
+      v-if="selectedVariableId" 
+      type="number" 
+      :value="selectedVariableValue" 
+      @input="updateVariableValue"
+    >
     <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
   </div>
 </template>
@@ -19,46 +25,52 @@
 <script lang="ts">
 import { defineComponent, ref, computed, PropType } from 'vue';
 import { useStore } from 'vuex';
-import { VariableBlock as VariableBlockType } from './types';
+import { VariableChangeBlock as VariableChangeBlockType } from './types';
 
 export default defineComponent({
-  name: 'VariableBlock',
+  name: 'VariableChangeBlock',
   props: {
     block: {
-      type: Object as PropType<VariableBlockType>,
+      type: Object as PropType<VariableChangeBlockType>,
       required: true
     },
     isInWorkspace: {
       type: Boolean,
       default: false
-    },
-    isNested: {
-      type: Boolean,
-      default: false
-    },
+    }
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
     const store = useStore();
     const selectedVariableId = ref(props.block.variableId || '');
+    const selectedVariableValue = ref(props.block.value);
 
     const variables = computed(() => store.getters['variables/getAllVariables']);
 
-    const selectedVariableValue = computed(() => {
-      const variable = store.getters['variables/getVariableById'](selectedVariableId.value);
-      return variable ? variable.value : null;
-    });
-
     const updateBlock = () => {
-      const updatedBlock: VariableBlockType = {
+      const updatedBlock: VariableChangeBlockType = {
         ...props.block,
-        variableId: selectedVariableId.value 
+        variableId: selectedVariableId.value,
+        value: selectedVariableValue.value
       };
       emit('update', updatedBlock);
     };
 
     const updateVariable = () => {
       updateBlock();
+    };
+
+    const updateVariableValue = (event: Event) => {
+      const value = Number((event.target as HTMLInputElement).value);
+      if (!isNaN(value) && selectedVariableId.value) {
+        store.dispatch('variables/updateVariable', {
+          id: selectedVariableId.value,
+          name: store.getters['variables/getVariableById'](selectedVariableId.value).name,
+          value: value
+        });
+        selectedVariableValue.value = value;
+        updateBlock(); // Update the block after updating the variable
+      }
     };
 
     const onDragStart = (event: DragEvent) => {
@@ -77,6 +89,7 @@ export default defineComponent({
       variables,
       selectedVariableValue,
       updateVariable,
+      updateVariableValue,
       onDragStart,
       onDragEnd,
     };
@@ -86,8 +99,7 @@ export default defineComponent({
 
 <style scoped>
 .variable-block {
-  width: 100%;
-  max-width: 200px;
+  width: 200px; /* Set a fixed width similar to PrintBlock */
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -112,6 +124,10 @@ export default defineComponent({
   border-radius: 3px;
   background-color: #ffab5e;
   color: white;
+}
+
+.variable-block select,
+.variable-block input {
   width: 100%;
 }
 
@@ -124,15 +140,5 @@ export default defineComponent({
   cursor: pointer;
   font-weight: bold;
   color: #ff0000;
-}
-
-:deep(.input-container) .variable-block {
-  width: 100%;
-  max-width: none;
-}
-
-:deep(.input-container) .variable-block select,
-:deep(.input-container) .variable-block input {
-  width: 100%;
 }
 </style>
