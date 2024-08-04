@@ -71,6 +71,7 @@ export interface MathOperatorBlock extends Block {
 export interface VariableBlock extends Block {
   type: 'variable';
   variableId: string;
+  previousVariableName: string;
 }
 
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator';

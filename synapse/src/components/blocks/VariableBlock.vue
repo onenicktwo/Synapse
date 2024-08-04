@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, PropType } from 'vue';
+import { defineComponent, ref, computed, PropType, watch } from 'vue';
 import { useStore } from 'vuex';
 import { VariableBlock as VariableBlockType } from './types';
 
@@ -71,7 +71,7 @@ export default defineComponent({
           name: store.getters['variables/getVariableById'](selectedVariableId.value).name,
           value: value
         });
-        updateBlock(); // Update the block after updating the variable
+        updateBlock();
       }
     };
 
@@ -85,6 +85,15 @@ export default defineComponent({
     const onDragEnd = (event: DragEvent) => {
       console.log('Drag ended at:', event.clientX, event.clientY);
     };
+
+    // Watch for changes in the variables store
+    watch(() => store.state.variables.variables, () => {
+      // If the selected variable no longer exists, reset the selection
+      if (selectedVariableId.value && !store.getters['variables/getVariableById'](selectedVariableId.value)) {
+        selectedVariableId.value = '';
+        updateBlock();
+      }
+    });
 
     return {
       selectedVariableId,
