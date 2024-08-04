@@ -16,13 +16,13 @@
         <component
           v-if="leftBlock"
           :key="leftBlock.id"
-          :is="getBlockComponent(leftBlock.type)"
+          :is="components[getBlockComponent(leftBlock.type)]"
           :block="leftBlock"
           :isInWorkspace="true"
           @remove="removeLeftBlock"
           @update="updateLeftBlock"
           draggable="true"
-          @dragstart.stop="(event) => handleInputDragStart(event, 'left')"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
         />
         <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
           <input 
@@ -42,13 +42,13 @@
         <component
           v-if="rightBlock"
           :key="rightBlock.id"
-          :is="getBlockComponent(rightBlock.type)"
+          :is="components[getBlockComponent(rightBlock.type)]"
           :block="rightBlock"
           :isInWorkspace="true"
           @remove="removeRightBlock"
           @update="updateRightBlock"
           draggable="true"
-          @dragstart.stop="(event) => handleInputDragStart(event, 'right')"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
         />
         <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
           <input 
@@ -188,6 +188,7 @@ export default defineComponent({
     };
 
     return {
+      components,
       operators,
       selectedOperator,
       leftBlock,
