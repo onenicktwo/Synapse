@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 import blocks from './modules/blocks';
 import workspace from './modules/workspace';
 import variables from './modules/variables';
+import functions from './modules/functions';
 
 export interface RootState {
   output: string[];
@@ -26,7 +27,8 @@ export default createStore({
   },
   modules: {
     blocks,
+    functions,
     workspace,
-    variables
+    variables,
   }
 });

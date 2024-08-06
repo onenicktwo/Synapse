@@ -50,8 +50,10 @@ export default defineComponent({
 
     onDrop(event: DragEvent) {
       if (event.dataTransfer) {
+        const allowedNestedBlocks = ['function'];
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-        const newBlock: Block = {
+        if (allowedNestedBlocks.includes(blockData.type)) { 
+          const newBlock: Block = {
           ...blockData,
           id: Date.now().toString(),
           position: {
@@ -60,6 +62,7 @@ export default defineComponent({
           }
         };
         this.addBlock(newBlock);
+        }
       }
     },
     async executeJavaCode(javaCode: string): Promise<string> {

@@ -134,6 +134,26 @@ const state: BlocksState = {
           default: '0'
         }
       ]
+    },
+    {
+      id: 'function',
+      type: 'function',
+      label: 'Function',
+      color: '#800080', // Choose a color for the function block
+      inputs: [
+        {
+          name: 'functionName',
+          type: 'string',
+          default: ''
+        }
+      ]
+    },
+    {
+      id: 'functionGetter',
+      type: 'functionGetter',
+      label: 'Function Getter',
+      color: '#FFA500', // Choose a color for the function getter block
+      inputs: []
     }
 
   ]

@@ -1,16 +1,29 @@
 import store from "@/store";
-import { Block, PrintBlock, IfThenBlock, CreateVariableBlock, ComparisonOperatorBlock, ComparisonLogicBlock, RepeatBlock, MathOperatorBlock, VariableBlock, VariableChangeBlock } from "./types";
+import {
+  Block,
+  PrintBlock,
+  IfThenBlock,
+  CreateVariableBlock,
+  ComparisonOperatorBlock,
+  ComparisonLogicBlock,
+  RepeatBlock,
+  MathOperatorBlock,
+  VariableBlock,
+  VariableChangeBlock,
+  FunctionBlock,
+  FunctionGetterBlock,
+} from "./types";
 
 class JavaBlockInterpreter {
   private javaCode: string[] = [];
   private indentationLevel: number = 2;
 
   generateJavaCode(blocks: Block[]): string {
-    this.javaCode = ['public class Main {', '  public static void main(String[] args) {'];
+    this.javaCode = ['public class Main {'];
     for (const block of blocks) {
       this.generateBlockCode(block);
     }
-    this.javaCode.push('  }', '}');
+    this.javaCode.push('}');
     return this.javaCode.join('\n');
   }
 
@@ -30,10 +43,31 @@ class JavaBlockInterpreter {
         return this.generateVariableBlockCode(block as VariableBlock);
       case 'variableChange':
         return this.generateVariableChangeBlockCode(block as VariableChangeBlock);
+      case 'function':
+        return this.generateFunctionBlockCode(block as FunctionBlock);
+      case 'functionGetter':
+        return this.generateFunctionGetterBlockCode(block as FunctionGetterBlock);
       default:
         console.warn(`Unexpected block type: ${block.type}`);
         break;
     }
+  }
+
+  private generateFunctionGetterBlockCode(block: FunctionGetterBlock): void {
+    const funcBlock = store.getters['functions/getFunctionById'](block.functionId);
+    this.addLine(funcBlock.name + '();');
+  }
+
+  private generateFunctionBlockCode(block: FunctionBlock): void{
+    if (block.functionName == 'main') {
+      this.addLine('public static void main(String[] args) {');
+    } else {
+      this.addLine('public static void ' + block.functionName + '() {');
+    }
+    for(const nestedBlock of block.nestedBlocks) {
+      this.generateBlockCode(nestedBlock);
+    }
+    this.addLine('}');
   }
 
   private generatePrintBlockCode(block: PrintBlock): void {

@@ -79,11 +79,22 @@ export interface VariableChangeBlock extends Block {
   value: number;
 }
 
+export interface FunctionBlock extends Block {
+  type: 'function';
+  functionName: string;
+  nestedBlocks: Block[];
+}
+
+export interface FunctionGetterBlock extends Block {
+  type: 'functionGetter';
+  functionId: string;
+}
+
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 
-| 'variableChange';
+| 'variableChange' | 'function' | 'functionGetter';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
-| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock';
+| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock' | 'FunctionBlock' | 'FunctionGetterBlock';
 
 export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   print: 'PrintBlock',
@@ -94,7 +105,9 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   repeat: 'RepeatBlock',
   variable: 'VariableBlock',
   mathOperator: 'MathOperatorBlock',
-  variableChange: 'VariableChangeBlock'
+  variableChange: 'VariableChangeBlock',
+  function: 'FunctionBlock',
+  functionGetter: 'FunctionGetterBlock'
 };
 
 export const blockComponents: Record<BlockComponentName, Component> = {
@@ -107,5 +120,7 @@ export const blockComponents: Record<BlockComponentName, Component> = {
   RepeatBlock: markRaw(require('./RepeatBlock.vue').default),
   UnknownBlock: markRaw(require('./UnknownBlock.vue').default),
   MathOperatorBlock: markRaw(require('./MathOperatorBlock.vue').default),
-  VariableChangeBlock: markRaw(require('./VariableChangeBlock.vue').default)
+  VariableChangeBlock: markRaw(require('./VariableChangeBlock.vue').default),
+  FunctionBlock: markRaw(require('./FunctionBlock.vue').default),
+  FunctionGetterBlock: markRaw(require('./FunctionGetterBlock.vue').default)
 };
