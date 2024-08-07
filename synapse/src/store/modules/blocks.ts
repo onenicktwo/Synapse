@@ -1,5 +1,3 @@
-// store/modules/blocks.ts
-
 interface BlockInput {
   name: string;
   type: string;
@@ -20,6 +18,26 @@ interface BlocksState {
 
 const state: BlocksState = {
   blocks: [
+    {
+      id: 'function',
+      type: 'function',
+      label: 'Function',
+      color: '#800080', // Choose a color for the function block
+      inputs: [
+        {
+          name: 'functionName',
+          type: 'string',
+          default: ''
+        }
+      ]
+    },
+    {
+      id: 'functionGetter',
+      type: 'functionGetter',
+      label: 'Function Getter',
+      color: '#FFA500', // Choose a color for the function getter block
+      inputs: []
+    },
     {
       id: 'print',
       type: 'print',
@@ -134,31 +152,9 @@ const state: BlocksState = {
           default: '0'
         }
       ]
-    },
-    {
-      id: 'function',
-      type: 'function',
-      label: 'Function',
-      color: '#800080', // Choose a color for the function block
-      inputs: [
-        {
-          name: 'functionName',
-          type: 'string',
-          default: ''
-        }
-      ]
-    },
-    {
-      id: 'functionGetter',
-      type: 'functionGetter',
-      label: 'Function Getter',
-      color: '#FFA500', // Choose a color for the function getter block
-      inputs: []
     }
-
   ]
 };
-
 
 const mutations = {
   // We'll add mutations later if needed
