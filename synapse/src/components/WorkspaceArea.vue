@@ -9,15 +9,17 @@
       <button @click="executeBlocks" class="btn btn-primary">Execute Blocks</button>
     </div>
     <div class="workspace-content">
-      <component 
-        v-for="block in workspaceBlocks" 
-        :key="block.id" 
-        :is="getBlockComponent(block.type)"
-        :block="block"
-        :isInWorkspace="true"
-        @remove="removeBlock(block.id)"
-        @update="updateBlock"
-      />
+      <div class="blocks-container">
+        <component 
+          v-for="block in workspaceBlocks" 
+          :key="block.id" 
+          :is="getBlockComponent(block.type)"
+          :block="block"
+          :isInWorkspace="true"
+          @remove="removeBlock(block.id)"
+          @update="updateBlock"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -54,36 +56,36 @@ export default defineComponent({
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
         if (allowedNestedBlocks.includes(blockData.type)) { 
           const newBlock: Block = {
-          ...blockData,
-          id: Date.now().toString(),
-          position: {
-            x: event.clientX - (event.target as HTMLElement).getBoundingClientRect().left,
-            y: event.clientY - (event.target as HTMLElement).getBoundingClientRect().top
-          }
-        };
-        this.addBlock(newBlock);
+            ...blockData,
+            id: Date.now().toString(),
+            position: {
+              x: event.clientX - (event.target as HTMLElement).getBoundingClientRect().left,
+              y: event.clientY - (event.target as HTMLElement).getBoundingClientRect().top
+            }
+          };
+          this.addBlock(newBlock);
         }
       }
     },
     async executeJavaCode(javaCode: string): Promise<string> {
-    try {
-      console.log(javaCode);
-      const response = await axios.post('http://localhost:3000/execute', { code: javaCode });
-      return response.data.output;
-    } catch (error) {
-      console.error('Error executing Java code:', error);
-      throw error;
-    }
+      try {
+        console.log(javaCode);
+        const response = await axios.post('http://localhost:3000/execute', { code: javaCode });
+        return response.data.output;
+      } catch (error) {
+        console.error('Error executing Java code:', error);
+        throw error;
+      }
     },
     async executeBlocks() {
       try {
-      const javaCode = this.interpreter.generateJavaCode(this.workspaceBlocks);
-      const output = await this.executeJavaCode(javaCode);
-      this.setOutput(output.split('\n'));
-    } catch (error) {
-      console.error('Error executing blocks:', error);
-      this.setOutput(['Error executing blocks. Please check the console for details.']);
-    }
+        const javaCode = this.interpreter.generateJavaCode(this.workspaceBlocks);
+        const output = await this.executeJavaCode(javaCode);
+        this.setOutput(output.split('\n'));
+      } catch (error) {
+        console.error('Error executing blocks:', error);
+        this.setOutput(['Error executing blocks. Please check the console for details.']);
+      }
     },
     getBlockComponent
   },
@@ -99,9 +101,21 @@ export default defineComponent({
   min-height: 300px;
   display: flex;
   flex-direction: column;
-  overflow-x: auto; /* Add horizontal scrolling if content overflows */
+  overflow: auto;
+  max-height: 80vh;
 }
 
+.workspace-area {
+  flex-grow: 1;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  max-height: 80vh;
+}
 
 .workspace-header {
   border-bottom: 1px solid #e0e0e0;
@@ -128,9 +142,16 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-width: min-content; /* Ensures content doesn't shrink below its minimum size */
+  min-width: min-content;
+  width: 100%;
 }
 
+.blocks-container {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 100%;
+}
 
 .btn-primary {
   background-color: #6c757d;
