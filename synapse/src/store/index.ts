@@ -1,10 +1,11 @@
 import { createStore } from 'vuex';
 import blocks from './modules/blocks';
-import workspace from './modules/workspace';
 import variables from './modules/variables';
 import functions from './modules/functions';
+import workspace from './modules/workspace';
 
 export interface RootState {
+  [x: string]: any;
   output: string[];
 }
 

@@ -18,13 +18,31 @@ class JavaBlockInterpreter {
   private javaCode: string[] = [];
   private indentationLevel: number = 2;
 
-  generateJavaCode(blocks: Block[]): string {
-    this.javaCode = ['public class Main {'];
-    for (const block of blocks) {
-      this.generateBlockCode(block);
+  generateJavaCode(): string {
+    const workspaceNames = store.getters['workspace/getAllWorkspaces'];
+    let allClassesCode: string[] = [];
+
+    for (const workspaceName of workspaceNames) {
+      this.javaCode = [`class ${workspaceName} {`];
+      this.indentationLevel = 2;
+
+      // Set the active workspace to get its blocks
+      store.dispatch('workspace/setActiveWorkspace', 
+        store.state.workspace.workspaces.find((w: { name: any; }) => w.name === workspaceName)?.id
+      );
+
+      const workspaceBlocks = store.getters['workspace/getWorkspaceBlocks'];
+      
+      for (const block of workspaceBlocks) {
+        this.generateBlockCode(block);
+      }
+
+      this.javaCode.push('}');
+      allClassesCode = allClassesCode.concat(this.javaCode);
+      allClassesCode.push(''); // Add an empty line between classes
     }
-    this.javaCode.push('}');
-    return this.javaCode.join('\n');
+
+    return allClassesCode.join('\n');
   }
 
   private generateBlockCode(block: any): string | void {

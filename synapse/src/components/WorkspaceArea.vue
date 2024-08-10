@@ -5,7 +5,7 @@
     @drop="onDrop"
   >
     <div class="workspace-header">
-      <h2 class="h4">Workspace</h2>
+      <h2 class="h4">Workspace: {{ activeWorkspace }}</h2>
       <button @click="executeBlocks" class="btn btn-primary">Execute Blocks</button>
     </div>
     <div class="workspace-content">
@@ -41,9 +41,12 @@ export default defineComponent({
     };
   },
   computed: {
-    ...mapGetters('workspace', ['getWorkspaceBlocks']),
+    ...mapGetters('workspace', ['getWorkspaceBlocks', 'getActiveWorkspace']),
     workspaceBlocks(): Block[] {
       return this.getWorkspaceBlocks;
+    },
+    activeWorkspace(): string | null {
+      return this.getActiveWorkspace;
     }
   },
   methods: {
@@ -79,7 +82,7 @@ export default defineComponent({
     },
     async executeBlocks() {
       try {
-        const javaCode = this.interpreter.generateJavaCode(this.workspaceBlocks);
+        const javaCode = this.interpreter.generateJavaCode();
         const output = await this.executeJavaCode(javaCode);
         this.setOutput(output.split('\n'));
       } catch (error) {
