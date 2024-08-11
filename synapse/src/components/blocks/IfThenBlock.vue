@@ -5,9 +5,9 @@
     draggable="true"
     @dragstart="handleDragStart"
   >
-    <div class="block-title">If-Then</div>
+    <div class="block-title">If-Then-Else</div>
     <div v-if="!isInWorkspace" class="toolbox-preview">
-      If (condition) Then ...
+      If (condition) Then ... Else ...
     </div>
     <template v-else>
       <div class="condition-area">
@@ -25,6 +25,7 @@
         </div>
       </div>
       <div class="then-area">
+        <div class="then-label">Then</div>
         <component
           v-for="nestedBlock in thenBlocks"
           :key="nestedBlock.id"
@@ -35,6 +36,21 @@
           @update="updateNestedBlock"
         />
         <div v-if="thenBlocks.length === 0" class="placeholder" @drop.stop="handleNestedDrop" @dragover.prevent>
+          Drop blocks here
+        </div>
+      </div>
+      <div class="else-area">
+        <div class="else-label">Else</div>
+        <component
+          v-for="elseBlock in elseBlocks"
+          :key="elseBlock.id"
+          :is="components[getBlockComponent(elseBlock.type)]"
+          :block="elseBlock"
+          :isInWorkspace="true"
+          @remove="removeElseBlock(elseBlock.id)"
+          @update="updateElseBlock"
+        />
+        <div v-if="elseBlocks.length === 0" class="placeholder" @drop.stop="handleElseDrop" @dragover.prevent>
           Drop blocks here
         </div>
       </div>
@@ -65,6 +81,7 @@ export default defineComponent({
     const components = computed(() => blockComponents);
     const conditionBlock = ref<Block | null>(props.block.conditionBlock || null);
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
+    const elseBlocks = ref<Block[]>(props.block.elseBlocks || []);
     
     const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'mathOperator'];
     const allowedConditionBlocks = ['compareOperator', 'compareLogic', 'variable'];
@@ -73,7 +90,8 @@ export default defineComponent({
       const updatedBlock: IfThenBlockType = {
         ...props.block,
         conditionBlock: conditionBlock.value,
-        thenBlocks: thenBlocks.value
+        thenBlocks: thenBlocks.value,
+        elseBlocks: elseBlocks.value
       };
       emit('update', updatedBlock);
     };
@@ -84,78 +102,109 @@ export default defineComponent({
     };
 
     const updateConditionBlock = (updatedBlock: Block) => {
-  conditionBlock.value = updatedBlock;
-  updateBlock();
-};
-
-const removeNestedBlock = (id: string) => {
-  thenBlocks.value = thenBlocks.value.filter(block => block.id !== id);
-  updateBlock();
-};
-
-const updateNestedBlock = (updatedBlock: Block) => {
-  const index = thenBlocks.value.findIndex(block => block.id === updatedBlock.id);
-  if (index !== -1) {
-    thenBlocks.value[index] = updatedBlock;
-    updateBlock();
-  }
-};
-
-const handleConditionDrop = (event: DragEvent) => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (event.dataTransfer) {
-    const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-    if (allowedConditionBlocks.includes(blockData.type)) {
-      const newBlock: Block = {
-        ...blockData,
-        id: Date.now().toString()
-      };
-      conditionBlock.value = newBlock;
+      conditionBlock.value = updatedBlock;
       updateBlock();
-    }
-  }
-};
+    };
 
-const handleNestedDrop = (event: DragEvent) => {
-  event.stopPropagation();
-  if (event.dataTransfer) {
-    const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-    if (allowedNestedBlocks.includes(blockData.type)) {
-      const newBlock: Block = {
-        ...blockData,
-        id: Date.now().toString()
-      };
-      thenBlocks.value.push(newBlock);
+    const removeNestedBlock = (id: string) => {
+      thenBlocks.value = thenBlocks.value.filter(block => block.id !== id);
       updateBlock();
-    }
-  }
-};
+    };
 
-const handleDragStart = (event: DragEvent) => {
-  if (event.dataTransfer) {
-    event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-    event.dataTransfer.effectAllowed = 'copy';
-  }
-};
+    const updateNestedBlock = (updatedBlock: Block) => {
+      const index = thenBlocks.value.findIndex(block => block.id === updatedBlock.id);
+      if (index !== -1) {
+        thenBlocks.value[index] = updatedBlock;
+        updateBlock();
+      }
+    };
 
-return {
-  conditionBlock,
-  thenBlocks,
-  components,
-  getBlockComponent,
-  removeConditionBlock,
-  updateConditionBlock,
-  removeNestedBlock,
-  updateNestedBlock,
-  handleConditionDrop,
-  handleNestedDrop,
-  handleDragStart,
-};
-}
+    const removeElseBlock = (id: string) => {
+      elseBlocks.value = elseBlocks.value.filter(block => block.id !== id);
+      updateBlock();
+    };
+
+    const updateElseBlock = (updatedBlock: Block) => {
+      const index = elseBlocks.value.findIndex(block => block.id === updatedBlock.id);
+      if (index !== -1) {
+        elseBlocks.value[index] = updatedBlock;
+        updateBlock();
+      }
+    };
+
+    const handleConditionDrop = (event: DragEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (allowedConditionBlocks.includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString()
+          };
+          conditionBlock.value = newBlock;
+          updateBlock();
+        }
+      }
+    };
+
+    const handleNestedDrop = (event: DragEvent) => {
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (allowedNestedBlocks.includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString()
+          };
+          thenBlocks.value.push(newBlock);
+          updateBlock();
+        }
+      }
+    };
+
+    const handleElseDrop = (event: DragEvent) => {
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (allowedNestedBlocks.includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString()
+          };
+          elseBlocks.value.push(newBlock);
+          updateBlock();
+        }
+      }
+    };
+
+    const handleDragStart = (event: DragEvent) => {
+      if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+        event.dataTransfer.effectAllowed = 'copy';
+      }
+    };
+
+    return {
+      conditionBlock,
+      thenBlocks,
+      elseBlocks,
+      components,
+      getBlockComponent,
+      removeConditionBlock,
+      updateConditionBlock,
+      removeNestedBlock,
+      updateNestedBlock,
+      removeElseBlock,
+      updateElseBlock,
+      handleConditionDrop,
+      handleNestedDrop,
+      handleElseDrop,
+      handleDragStart,
+    };
+  }
 });
 </script>
-
 
 <style scoped>
 .if-then-block {
@@ -189,23 +238,35 @@ return {
 }
 
 .condition-area,
-.then-area {
+.then-area,
+.else-area {
   margin-bottom: 15px;
 }
-.then-area {
+
+.then-area,
+.else-area {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center horizontally */
+  align-items: center;
 }
+
 .condition-area > *,
-.then-area > * {
+.then-area > *,
+.else-area > * {
   width: 100%;
   margin-bottom: 10px;
 }
 
 .condition-area > *:last-child,
-.then-area > *:last-child {
+.then-area > *:last-child,
+.else-area > *:last-child {
   margin-bottom: 0;
+}
+
+.then-label,
+.else-label {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .placeholder {
@@ -217,6 +278,7 @@ return {
   border-radius: 5px;
   cursor: pointer; 
 }
+
 .remove-btn {
   position: absolute;
   top: 5px;
@@ -230,7 +292,8 @@ return {
 
 /* Adjustments for toolbox */
 .in-toolbox .condition-area,
-.in-toolbox .then-area {
+.in-toolbox .then-area,
+.in-toolbox .else-area {
   display: none;
 }
 
@@ -248,6 +311,4 @@ return {
 .in-workspace .toolbox-preview {
   display: none;
 }
-
-
 </style>

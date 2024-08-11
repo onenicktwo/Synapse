@@ -108,6 +108,17 @@ class JavaBlockInterpreter {
       }
       this.indentationLevel -= 2;
       this.addLine('}');
+      
+      // Add else block
+      if (block.elseBlocks && block.elseBlocks.length > 0) {
+        this.addLine('else {');
+        this.indentationLevel += 2;
+        for (const elseBlock of block.elseBlocks) {
+          this.generateBlockCode(elseBlock);
+        }
+        this.indentationLevel -= 2;
+        this.addLine('}');
+      }
     } else {
       // Handle the case where there's no condition
       console.warn('If-Then block has no condition');

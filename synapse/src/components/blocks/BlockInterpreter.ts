@@ -97,13 +97,22 @@ class BlockInterpreter {
   private executeIfThenBlock(block: IfThenBlock): void {
     if (block.conditionBlock) {
       const conditionResult = this.evaluateCondition(block.conditionBlock);
-      if (conditionResult && block.thenBlocks) {
-      for (const thenBlock of block.thenBlocks) {
-        this.executeBlock(thenBlock);
+      if (conditionResult) {
+        if (block.thenBlocks) {
+          for (const thenBlock of block.thenBlocks) {
+            this.executeBlock(thenBlock);
+          }
+        }
+      } else {
+        if (block.elseBlocks) {
+          for (const elseBlock of block.elseBlocks) {
+            this.executeBlock(elseBlock);
+          }
+        }
       }
     }
-    }
   }
+
 
   private executeCreateVariableBlock(block: CreateVariableBlock): void {
     const [nameInput, valueInput] = block.inputs;

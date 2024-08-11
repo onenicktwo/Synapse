@@ -27,6 +27,7 @@ export interface IfThenBlock extends Block {
   type: 'ifThen';
   conditionBlock: Block | null;
   thenBlocks: Block[];
+  elseBlocks: Block[]; 
 }
 
 export interface CreateVariableBlock extends Block {
