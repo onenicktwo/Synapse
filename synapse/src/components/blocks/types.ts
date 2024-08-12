@@ -79,22 +79,31 @@ export interface VariableChangeBlock extends Block {
   value: number;
 }
 
+export interface ParameterBlock extends Block {
+  type: 'parameter';
+  name: string; 
+  value: string | number | null;
+}
+
 export interface FunctionBlock extends Block {
   type: 'function';
   functionName: string;
   nestedBlocks: Block[];
+  parameters: ParameterBlock[]; 
 }
 
 export interface FunctionGetterBlock extends Block {
   type: 'functionGetter';
   functionId: string;
+  parameterValues: string[];
 }
 
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 
-| 'variableChange' | 'function' | 'functionGetter';
+| 'variableChange' | 'function' | 'functionGetter' | 'parameter';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
-| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock' | 'FunctionBlock' | 'FunctionGetterBlock';
+| 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock' | 'FunctionBlock' | 'FunctionGetterBlock'
+| 'ParameterBlock';
 
 export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   print: 'PrintBlock',
@@ -107,7 +116,8 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   mathOperator: 'MathOperatorBlock',
   variableChange: 'VariableChangeBlock',
   function: 'FunctionBlock',
-  functionGetter: 'FunctionGetterBlock'
+  functionGetter: 'FunctionGetterBlock',
+  parameter: 'ParameterBlock'
 };
 
 export const blockComponents: Record<BlockComponentName, Component> = {
@@ -122,5 +132,6 @@ export const blockComponents: Record<BlockComponentName, Component> = {
   MathOperatorBlock: markRaw(require('./MathOperatorBlock.vue').default),
   VariableChangeBlock: markRaw(require('./VariableChangeBlock.vue').default),
   FunctionBlock: markRaw(require('./FunctionBlock.vue').default),
-  FunctionGetterBlock: markRaw(require('./FunctionGetterBlock.vue').default)
+  FunctionGetterBlock: markRaw(require('./FunctionGetterBlock.vue').default),
+  ParameterBlock: markRaw(require('./ParameterBlock.vue').default),
 };

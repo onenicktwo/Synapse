@@ -24,11 +24,31 @@
         X
       </button>
     </div>
+
+    <div v-if="isInWorkspace" class="parameters">
+      <div class="add-parameter">
+        <input type="text" v-model="newParameterName" placeholder="Parameter Name">
+        <button @click="addParameter">Add Parameter</button>
+      </div>
+      <div
+        v-for="(parameter, index) in parameters"
+        :key="index"
+        class="parameter"
+      >
+        <ParameterBlock
+          :block="parameter"
+          :isEditable="false"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleParameterDragStart(event, parameter)"
+        />
+      </div>
+    </div>
+
     <div
       v-if="isInWorkspace"
       class="nested-blocks"
       ref="nestedBlocksContainer"
-      @dragover.prevent="handleDragOver" 
+      @dragover.prevent="handleDragOver"
       @drop.stop="onDrop"
     >
       <component
@@ -52,11 +72,20 @@
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
 import { mapActions, mapGetters } from 'vuex';
-import { FunctionBlock as FunctionBlockType, Block, blockComponents } from './types';
+import { 
+  FunctionBlock as FunctionBlockType, 
+  Block, 
+  blockComponents,
+  ParameterBlock as ParameterBlockType 
+} from './types';
 import { getBlockComponent } from '../blockUtils';
+import ParameterBlock from './ParameterBlock.vue'; 
 
 export default defineComponent({
   name: 'FunctionBlock',
+  components: {
+    ParameterBlock,
+  },
   props: {
     block: {
       type: Object as PropType<FunctionBlockType>,
@@ -71,12 +100,22 @@ export default defineComponent({
   setup(props) {
     const functionName = ref(props.block.functionName || '');
     const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
+    const parameters = ref<ParameterBlockType[]>(props.block.parameters || []);
     const components = blockComponents;
+    const newParameterName = ref('');
 
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
         event.dataTransfer.effectAllowed = 'copy';
+      }
+    };
+
+    const handleParameterDragStart = (event: DragEvent, parameter: ParameterBlockType) => {
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', JSON.stringify(parameter));
+        event.dataTransfer.effectAllowed = 'move';
       }
     };
 
@@ -86,6 +125,9 @@ export default defineComponent({
       nestedBlocks,
       components,
       getBlockComponent,
+      handleParameterDragStart,
+      parameters, 
+      newParameterName
     };
   },
   computed: {
@@ -98,6 +140,7 @@ export default defineComponent({
         ...this.block,
         functionName: this.functionName,
         nestedBlocks: this.nestedBlocks,
+        parameters: this.parameters, 
       });
 
       this.updateOrCreateFunction();
@@ -109,11 +152,13 @@ export default defineComponent({
           this.updateFunction({
             ...existingFunction,
             nestedBlocks: this.nestedBlocks,
+            parameters: this.parameters, 
           });
         } else {
           this.addFunction({
             name: this.functionName,
             nestedBlocks: this.nestedBlocks,
+            parameters: this.parameters, 
           });
         }
       } else {
@@ -151,6 +196,7 @@ export default defineComponent({
         'variable',
         'repeat',
         'functionGetter',
+        'parameter'
       ];
       event.stopPropagation();
       if (event.dataTransfer) {
@@ -176,6 +222,33 @@ export default defineComponent({
     },
     handleDragOver(event: DragEvent) {
       event.preventDefault(); // Necessary for drop to work
+    },
+    addParameter() {
+      if (this.newParameterName.trim() !== '') {
+        this.parameters.push({
+          id: Date.now().toString(),
+          type: 'parameter',
+          name: this.newParameterName,
+          value: null,
+          label: 'Parameter',
+          color: '#CCCCCC',
+          inputs: [],
+        });
+        this.newParameterName = ''; // Clear the input
+        this.updateBlock();
+      }
+    },
+    updateParameter(index: number, updatedParameter: ParameterBlockType) {
+      if (index >= 0 && index < this.parameters.length) {
+        this.parameters[index] = updatedParameter;
+        this.updateBlock();
+      }
+    },
+    removeParameter(index: number) {
+      if (index >= 0 && index < this.parameters.length) {
+        this.parameters.splice(index, 1);
+        this.updateBlock();
+      }
     },
   },
   watch: {

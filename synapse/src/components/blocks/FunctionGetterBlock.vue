@@ -4,7 +4,6 @@
     :style="{ backgroundColor: block.color }"
     draggable="true"
     @dragstart="onDragStart"
-    @dragend="onDragEnd"
   >
     <div class="function-title">Function Call</div>
     <select v-model="selectedFunctionId" @change="updateFunction">
@@ -13,14 +12,33 @@
         {{ func.name }}
       </option>
     </select>
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+
+    <div v-if="selectedFunction"> 
+      <div
+        v-for="(param, index) in selectedFunction.parameters"
+        :key="index"
+        class="parameter-input"
+      >
+        <label>{{ param.name }}:</label>
+        <input
+          type="text"
+          v-model="parameterValues[index]"
+          @input="updateFunction"
+          :disabled="index >= selectedFunction.parameters.length"
+        >
+      </div>
+    </div>
+
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
+      X
+    </button>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, PropType } from 'vue';
+import { defineComponent, ref, computed, PropType, watch } from 'vue';
 import { useStore } from 'vuex';
-import { FunctionGetterBlock as FunctionGetterBlockType } from './types';
+import { FunctionBlock, FunctionGetterBlock as FunctionGetterBlockType } from './types';
 
 export default defineComponent({
   name: 'FunctionGetterBlock',
@@ -45,39 +63,52 @@ export default defineComponent({
 
     const functions = computed(() => store.getters['functions/getAllFunctions']);
 
-    const updateBlock = () => {
-      const updatedBlock: FunctionGetterBlockType = {
-        ...props.block,
-        functionId: selectedFunctionId.value 
-      };
-      emit('update', updatedBlock);
-    };
+    const parameterValues = ref<string[]>(props.block.parameterValues || []);
+
+    const selectedFunction = computed((): FunctionBlock | undefined => {
+      if (selectedFunctionId.value) {
+        return functions.value.find((f: { id: string; }) => f.id === selectedFunctionId.value);
+      }
+      return undefined;
+    });
+
+    watch(selectedFunction, (newFunction) => {
+      if (newFunction) {
+        parameterValues.value = newFunction.parameters.map(() => ''); 
+      } else {
+        parameterValues.value = []; 
+      }
+    });
 
     const updateFunction = () => {
-      updateBlock();
+      if (selectedFunction.value) {
+        const validParameterValues = parameterValues.value.slice(0, selectedFunction.value.parameters.length);
+        emit('update', {
+          ...props.block,
+          functionId: selectedFunction.value.id,
+          parameterValues: validParameterValues,
+        });
+      }
     };
 
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-        event.dataTransfer.effectAllowed = 'copy';
       }
-    };
-
-    const onDragEnd = (event: DragEvent) => {
-      console.log('Drag ended at:', event.clientX, event.clientY);
     };
 
     return {
       selectedFunctionId,
       functions,
+      parameterValues,
+      selectedFunction,
       updateFunction,
       onDragStart,
-      onDragEnd,
     };
   },
 });
 </script>
+
 
 <style scoped>
 .function-getter-block {

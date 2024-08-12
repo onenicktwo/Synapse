@@ -55,21 +55,27 @@ export default defineComponent({
 
     onDrop(event: DragEvent) {
       if (event.dataTransfer) {
-        const allowedNestedBlocks = ['function'];
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-        if (allowedNestedBlocks.includes(blockData.type)) { 
-          const newBlock: Block = {
-            ...blockData,
-            id: Date.now().toString(),
-            position: {
-              x: event.clientX - (event.target as HTMLElement).getBoundingClientRect().left,
-              y: event.clientY - (event.target as HTMLElement).getBoundingClientRect().top
-            }
-          };
-          this.addBlock(newBlock);
+        
+        // Check if the dropped block is a parameter
+        if (blockData.type === 'parameter') {
+          // If it's a parameter, don't add it to the workspace
+          console.warn('Parameters cannot be added directly to the workspace');
+          return;
         }
+
+        const newBlock: Block = {
+          ...blockData,
+          id: Date.now().toString(),
+          position: {
+            x: event.clientX - (event.target as HTMLElement).getBoundingClientRect().left,
+            y: event.clientY - (event.target as HTMLElement).getBoundingClientRect().top
+          }
+        };
+        this.addBlock(newBlock);
       }
     },
+
     async executeJavaCode(javaCode: string): Promise<string> {
       try {
         console.log(javaCode);
@@ -80,6 +86,7 @@ export default defineComponent({
         throw error;
       }
     },
+
     async executeBlocks() {
       try {
         const javaCode = this.interpreter.generateJavaCode();
@@ -90,6 +97,7 @@ export default defineComponent({
         this.setOutput(['Error executing blocks. Please check the console for details.']);
       }
     },
+
     getBlockComponent
   },
 });
