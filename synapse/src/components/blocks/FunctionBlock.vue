@@ -6,29 +6,48 @@
     draggable="true"
     @dragstart="onDragStart"
   >
-    <div class="block-header">
-      <div class="block-label">
-        <span v-if="isInWorkspace">Function</span>
-        <input
-          v-if="isInWorkspace"
-          type="text"
-          v-model="functionName"
-          placeholder="Function Name"
-          @input="updateBlock"
-        >
-        <span v-if="!isInWorkspace" class="toolbox-preview">
-          Function (parameters)
-        </span>
-      </div>
+    <div class="title-bar"> 
+      <span v-if="isInWorkspace" class="block-title">Function</span>
+      <input
+        v-if="isInWorkspace"
+        type="text"
+        v-model="functionName"
+        placeholder="Function Name"
+        @input="updateBlock"
+        class="function-name-input" 
+      >
+      <span v-if="!isInWorkspace" class="block-title">
+        Function (parameters)
+      </span>
       <button v-if="isInWorkspace" @click="removeFunctionAndEmit" class="remove-btn">
         X
       </button>
     </div>
+
+    <div v-if="isInWorkspace" class="parameters">
+      <div class="add-parameter">
+        <input type="text" v-model="newParameterName" placeholder="Parameter Name">
+        <button @click="addParameter">Add Parameter</button>
+      </div>
+      <div
+        v-for="(parameter, index) in parameters"
+        :key="index"
+        class="parameter"
+      >
+        <ParameterBlock
+          :block="parameter"
+          :isEditable="false"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleParameterDragStart(event, parameter)"
+        />
+      </div>
+    </div>
+
     <div
       v-if="isInWorkspace"
       class="nested-blocks"
       ref="nestedBlocksContainer"
-      @dragover.prevent="handleDragOver" 
+      @dragover.prevent="handleDragOver"
       @drop.stop="onDrop"
     >
       <component
@@ -52,11 +71,20 @@
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
 import { mapActions, mapGetters } from 'vuex';
-import { FunctionBlock as FunctionBlockType, Block, blockComponents } from './types';
+import { 
+  FunctionBlock as FunctionBlockType, 
+  Block, 
+  blockComponents,
+  ParameterBlock as ParameterBlockType 
+} from './types';
 import { getBlockComponent } from '../blockUtils';
+import ParameterBlock from './ParameterBlock.vue'; 
 
 export default defineComponent({
   name: 'FunctionBlock',
+  components: {
+    ParameterBlock,
+  },
   props: {
     block: {
       type: Object as PropType<FunctionBlockType>,
@@ -71,12 +99,22 @@ export default defineComponent({
   setup(props) {
     const functionName = ref(props.block.functionName || '');
     const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
+    const parameters = ref<ParameterBlockType[]>(props.block.parameters || []);
     const components = blockComponents;
+    const newParameterName = ref('');
 
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
         event.dataTransfer.effectAllowed = 'copy';
+      }
+    };
+
+    const handleParameterDragStart = (event: DragEvent, parameter: ParameterBlockType) => {
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        event.dataTransfer.setData('text/plain', JSON.stringify(parameter));
+        event.dataTransfer.effectAllowed = 'move';
       }
     };
 
@@ -86,6 +124,9 @@ export default defineComponent({
       nestedBlocks,
       components,
       getBlockComponent,
+      handleParameterDragStart,
+      parameters, 
+      newParameterName
     };
   },
   computed: {
@@ -98,6 +139,7 @@ export default defineComponent({
         ...this.block,
         functionName: this.functionName,
         nestedBlocks: this.nestedBlocks,
+        parameters: this.parameters, 
       });
 
       this.updateOrCreateFunction();
@@ -109,11 +151,13 @@ export default defineComponent({
           this.updateFunction({
             ...existingFunction,
             nestedBlocks: this.nestedBlocks,
+            parameters: this.parameters, 
           });
         } else {
           this.addFunction({
             name: this.functionName,
             nestedBlocks: this.nestedBlocks,
+            parameters: this.parameters, 
           });
         }
       } else {
@@ -151,6 +195,7 @@ export default defineComponent({
         'variable',
         'repeat',
         'functionGetter',
+        'parameter'
       ];
       event.stopPropagation();
       if (event.dataTransfer) {
@@ -176,6 +221,33 @@ export default defineComponent({
     },
     handleDragOver(event: DragEvent) {
       event.preventDefault(); // Necessary for drop to work
+    },
+    addParameter() {
+      if (this.newParameterName.trim() !== '') {
+        this.parameters.push({
+          id: Date.now().toString(),
+          type: 'parameter',
+          name: this.newParameterName,
+          value: null,
+          label: 'Parameter',
+          color: '#CCCCCC',
+          inputs: [],
+        });
+        this.newParameterName = ''; // Clear the input
+        this.updateBlock();
+      }
+    },
+    updateParameter(index: number, updatedParameter: ParameterBlockType) {
+      if (index >= 0 && index < this.parameters.length) {
+        this.parameters[index] = updatedParameter;
+        this.updateBlock();
+      }
+    },
+    removeParameter(index: number) {
+      if (index >= 0 && index < this.parameters.length) {
+        this.parameters.splice(index, 1);
+        this.updateBlock();
+      }
     },
   },
   watch: {
@@ -208,7 +280,7 @@ export default defineComponent({
   flex-direction: column;
   background-color: #6c5ce7;
   color: white;
-  transition: height 0.3s ease; /* Add transition for height */
+  transition: height 0.3s ease; 
 }
 
 .function-block.in-toolbox {
@@ -223,30 +295,26 @@ export default defineComponent({
   font-size: 1em;
 }
 
-.block-header {
+/* Title Bar Styling */
+.title-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.block-label {
-  display: flex;
-  align-items: center;
+.block-title {
   font-weight: bold;
+  white-space: nowrap; /* Prevent title from wrapping */
 }
 
-.block-label input {
-  margin-left: 5px;
+.function-name-input { 
+  flex-grow: 1; /* Allow input to fill available space */
+  margin-left: 5px; 
   padding: 2px 5px;
   border: 1px solid #ccc;
   border-radius: 3px;
   font-size: 14px;
-}
-
-.toolbox-preview {
-  font-style: italic;
-  font-size: 0.9em;
 }
 
 .nested-blocks {
@@ -254,11 +322,11 @@ export default defineComponent({
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
   padding: 5px;
-  cursor: pointer; /* Default cursor for the drop area */
+  cursor: pointer; 
 }
 
 .nested-blocks:hover {
-  background-color: rgba(0, 0, 0, 0.1); /* Subtle background change on hover */
+  background-color: rgba(0, 0, 0, 0.1); 
 }
 
 .placeholder {
@@ -267,6 +335,41 @@ export default defineComponent({
   font-style: italic;
   padding: 5px;
   cursor: default;
+}
+
+.parameters {
+  margin-bottom: 10px; 
+}
+
+.add-parameter {
+  display: flex;
+  margin-bottom: 5px; 
+}
+
+.add-parameter input {
+  flex-grow: 1;
+  margin-right: 5px;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.add-parameter button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.parameter {
+  margin-bottom: 5px; 
 }
 
 .remove-btn {

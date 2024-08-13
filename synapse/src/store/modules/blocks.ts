@@ -19,10 +19,17 @@ interface BlocksState {
 const state: BlocksState = {
   blocks: [
     {
+      id: 'parameter',
+      type: 'parameter',
+      label: 'Parameter', // This label won't be used in the FunctionBlock
+      color: '#CCCCCC', 
+      inputs: []
+    },
+    {
       id: 'function',
       type: 'function',
       label: 'Function',
-      color: '#800080', // Choose a color for the function block
+      color: '#800080',
       inputs: [
         {
           name: 'functionName',
@@ -35,8 +42,14 @@ const state: BlocksState = {
       id: 'functionGetter',
       type: 'functionGetter',
       label: 'Function Getter',
-      color: '#FFA500', // Choose a color for the function getter block
-      inputs: []
+      color: '#FFA500',
+      inputs: [
+        {
+          name: 'functionId',
+          type: 'string',
+          default: ''
+        }
+      ]
     },
     {
       id: 'print',

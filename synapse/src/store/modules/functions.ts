@@ -1,11 +1,12 @@
 import { Module, ActionContext } from 'vuex';
 import { RootState } from '../index';
-import { Block } from '@/components/blocks/types';
+import { Block, ParameterBlock } from '@/components/blocks/types';
 
 export interface Function {
   id: string;
   name: string;
   nestedBlocks: Block[];
+  parameters: ParameterBlock[];
 }
 
 interface FunctionsState {
@@ -37,7 +38,8 @@ const actions = {
   addFunction({ commit }: ActionContext<FunctionsState, RootState>, func: Omit<Function, 'id'>) {
     const newFunction: Function = {
       ...func,
-      id: Date.now().toString()
+      id: Date.now().toString(),
+      parameters: func.parameters || []
     };
     commit('ADD_FUNCTION', newFunction);
   },
