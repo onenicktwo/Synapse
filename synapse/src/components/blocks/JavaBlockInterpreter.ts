@@ -12,6 +12,7 @@ import {
   VariableChangeBlock,
   FunctionBlock,
   FunctionGetterBlock,
+  ParameterBlock,
 } from "./types";
 
 class JavaBlockInterpreter {
@@ -65,24 +66,57 @@ class JavaBlockInterpreter {
         return this.generateFunctionBlockCode(block as FunctionBlock);
       case 'functionGetter':
         return this.generateFunctionGetterBlockCode(block as FunctionGetterBlock);
+      case 'parameter':
+        return this.generateParameterCode(block as ParameterBlock);
       default:
         console.warn(`Unexpected block type: ${block.type}`);
         break;
     }
   }
 
-  private generateFunctionGetterBlockCode(block: FunctionGetterBlock): void {
-    const funcBlock = store.getters['functions/getFunctionById'](block.functionId);
-    this.addLine(funcBlock.name + '();');
+  private generateParameterCode(block: ParameterBlock): string {
+    return block.name;
   }
 
-  private generateFunctionBlockCode(block: FunctionBlock): void{
-    if (block.functionName == 'main') {
+  private generateFunctionGetterBlockCode(block: FunctionGetterBlock): void {
+    const funcBlock = store.getters['functions/getFunctionById'](block.functionId);
+    if (!funcBlock) {
+      console.error(`Function not found with ID: ${block.functionId}`);
+      return;
+    }
+  
+    let parameterString = '';
+    if (block.nestedBlocks && block.nestedBlocks.length > 0) {
+      const paramValues = block.nestedBlocks.map((nestedBlock, index) => {
+        if (nestedBlock) {
+          if (nestedBlock.type === 'variable') {
+            return (nestedBlock as VariableBlock).variableId;
+          } else {
+            return this.generateBlockCode(nestedBlock);
+          }
+        } else {
+          const value = block.parameterValues[index];
+          return isNaN(Number(value)) ? `"${value}"` : value;
+        }
+      });
+      parameterString = paramValues.join(', ');
+    }
+  
+    this.addLine(`${funcBlock.name}(${parameterString});`);
+  }
+
+  private generateFunctionBlockCode(block: FunctionBlock): void {
+    const parameterString = block.parameters.map((param: ParameterBlock) => {
+      return `int ${param.name}`; 
+    }).join(', ');
+
+    if (block.functionName === 'main') {
       this.addLine('public static void main(String[] args) {');
     } else {
-      this.addLine('public static void ' + block.functionName + '() {');
+      this.addLine(`public static void ${block.functionName}(${parameterString}) {`); 
     }
-    for(const nestedBlock of block.nestedBlocks) {
+
+    for (const nestedBlock of block.nestedBlocks) {
       this.generateBlockCode(nestedBlock);
     }
     this.addLine('}');

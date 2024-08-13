@@ -20,12 +20,27 @@
         class="parameter-input"
       >
         <label>{{ param.name }}:</label>
-        <input
-          type="text"
-          v-model="parameterValues[index]"
-          @input="updateFunction"
-          :disabled="index >= selectedFunction.parameters.length"
-        >
+        <div class="input-container" :class="{ 'has-block': nestedBlocks[index] }">
+          <component
+            v-if="nestedBlocks[index]"
+            :key="nestedBlocks[index].id"
+            :is="components[getBlockComponent(nestedBlocks[index].type)]"
+            :block="nestedBlocks[index]"
+            :isInWorkspace="true"
+            @remove="() => removeNestedBlock(index)"
+            @update="(updatedBlock: Block) => updateNestedBlock(index, updatedBlock)"
+            draggable="true"
+            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, index)"
+          />
+          <div v-else class="block-input" @drop.stop="(event) => handleInputDrop(event, index)" @dragover.prevent>
+            <input
+              type="text"
+              v-model="parameterValues[index]"
+              @input="updateFunction"
+              :placeholder="param.name"
+            >
+          </div>
+        </div>
       </div>
     </div>
 
@@ -38,7 +53,9 @@
 <script lang="ts">
 import { defineComponent, ref, computed, PropType, watch } from 'vue';
 import { useStore } from 'vuex';
-import { FunctionBlock, FunctionGetterBlock as FunctionGetterBlockType } from './types';
+import { FunctionBlock, FunctionGetterBlock as FunctionGetterBlockType, Block } from './types';
+import { blockComponents } from './types';
+import { getBlockComponent } from '../blockUtils';
 
 export default defineComponent({
   name: 'FunctionGetterBlock',
@@ -60,10 +77,10 @@ export default defineComponent({
   setup(props, { emit }) {
     const store = useStore();
     const selectedFunctionId = ref(props.block.functionId || '');
-
     const functions = computed(() => store.getters['functions/getAllFunctions']);
-
     const parameterValues = ref<string[]>(props.block.parameterValues || []);
+    const nestedBlocks = ref<(Block | null)[]>(props.block.nestedBlocks || []);
+    const components = computed(() => blockComponents);
 
     const selectedFunction = computed((): FunctionBlock | undefined => {
       if (selectedFunctionId.value) {
@@ -72,21 +89,28 @@ export default defineComponent({
       return undefined;
     });
 
+
     watch(selectedFunction, (newFunction) => {
       if (newFunction) {
-        parameterValues.value = newFunction.parameters.map(() => ''); 
+        parameterValues.value = newFunction.parameters.map(() => '');
+        nestedBlocks.value = newFunction.parameters.map(() => null);
       } else {
-        parameterValues.value = []; 
+        parameterValues.value = [];
+        nestedBlocks.value = [];
       }
     });
 
     const updateFunction = () => {
       if (selectedFunction.value) {
-        const validParameterValues = parameterValues.value.slice(0, selectedFunction.value.parameters.length);
+        const validParameterValues = parameterValues.value.map(value => 
+          value === '' ? '' : Number(value)
+        ).slice(0, selectedFunction.value.parameters.length);
+        
         emit('update', {
           ...props.block,
           functionId: selectedFunction.value.id,
           parameterValues: validParameterValues,
+          nestedBlocks: nestedBlocks.value,
         });
       }
     };
@@ -97,13 +121,53 @@ export default defineComponent({
       }
     };
 
+    const removeNestedBlock = (index: number) => {
+      nestedBlocks.value[index] = null;
+      updateFunction();
+    };
+
+    const updateNestedBlock = (index: number, updatedBlock: Block) => {
+      nestedBlocks.value[index] = updatedBlock;
+      updateFunction();
+    };
+
+    const handleInputDrop = (event: DragEvent, index: number) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (['variable', 'parameter'].includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString()
+          };
+          nestedBlocks.value[index] = newBlock;
+          updateFunction();
+        }
+      }
+    };
+
+    const handleInputDragStart = (event: DragEvent, index: number) => {
+      if (nestedBlocks.value[index]) {
+        event.dataTransfer?.setData('text/plain', JSON.stringify(nestedBlocks.value[index]));
+        event.dataTransfer!.effectAllowed = 'copy';
+      }
+    };
+
     return {
       selectedFunctionId,
       functions,
       parameterValues,
       selectedFunction,
+      nestedBlocks,
+      components,
+      getBlockComponent,
       updateFunction,
       onDragStart,
+      removeNestedBlock,
+      updateNestedBlock,
+      handleInputDrop,
+      handleInputDragStart,
     };
   },
 });
@@ -157,5 +221,40 @@ export default defineComponent({
 
 :deep(.input-container) .function-getter-block select {
   width: 100%;
+}
+
+.input-container {
+  min-height: 30px;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.input-container.has-block {
+  width: 100%;
+  border: none;
+}
+
+.block-input {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.block-input input {
+  width: 100%;
+  padding: 5px;
+  border: none;
+  border-radius: 3px;
+  background-color: transparent;
+  color: white;
+}
+
+.block-input input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 </style>

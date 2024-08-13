@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType} from 'vue';
 import { mapActions, mapGetters } from 'vuex';
 import BaseBlock from './PrintBlockTemplate.vue';
 import { CreateVariableBlock as CreateVariableBlockType } from './types';
@@ -45,10 +45,11 @@ export default defineComponent({
     return {
       variableName: this.block.inputs[0].default || '',
       variableValue: parseFloat(this.block.inputs[1].default) || 0,
+      previousVariableName: '',
     };
   },
   computed: {
-    ...mapGetters('variables', ['getVariableByName'])
+    ...mapGetters('variables', ['getVariableByName', 'getAllVariables'])
   },
   methods: {
     ...mapActions('variables', ['addVariable', 'removeVariable', 'updateVariable']),
@@ -70,7 +71,14 @@ export default defineComponent({
       this.updateOrCreateVariable();
     },
     updateOrCreateVariable() {
-      if (typeof this.variableName === 'string' && this.variableName !== '' && this.variableValue !== undefined) {
+      if (this.variableName && this.variableName !== this.previousVariableName) {
+        // Remove the previous variable if it exists
+        const previousVariable = this.getVariableByName(this.previousVariableName);
+        if (previousVariable) {
+          this.removeVariable(previousVariable.id);
+        }
+
+        // Add or update the new variable
         const existingVariable = this.getVariableByName(this.variableName);
         if (existingVariable) {
           this.updateVariable({
@@ -83,8 +91,17 @@ export default defineComponent({
             value: this.variableValue
           });
         }
-      } else {
-        console.error('CreateVariable block has invalid inputs');
+
+        this.previousVariableName = this.variableName;
+      } else if (this.variableName) {
+        // Just update the value if the name hasn't changed
+        const existingVariable = this.getVariableByName(this.variableName);
+        if (existingVariable) {
+          this.updateVariable({
+            ...existingVariable,
+            value: this.variableValue
+          });
+        }
       }
     },
     removeVariableAndEmit() {
@@ -98,6 +115,22 @@ export default defineComponent({
   mounted() {
     if (this.isInWorkspace && this.variableName) {
       this.updateOrCreateVariable();
+    }
+  },
+  watch: {
+    variableName: {
+      handler(newName, oldName) {
+        if (newName !== oldName) {
+          this.updateOrCreateVariable();
+        }
+      },
+      immediate: true
+    },
+    variableValue: {
+      handler() {
+        this.updateOrCreateVariable();
+      },
+      immediate: true
     }
   },
 });

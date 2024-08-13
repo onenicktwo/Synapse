@@ -96,6 +96,7 @@ export interface FunctionGetterBlock extends Block {
   type: 'functionGetter';
   functionId: string;
   parameterValues: string[];
+  nestedBlocks: (Block | null)[]; // Add this line
 }
 
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 

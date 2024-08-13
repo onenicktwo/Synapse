@@ -6,20 +6,19 @@
     draggable="true"
     @dragstart="onDragStart"
   >
-    <div class="block-header">
-      <div class="block-label">
-        <span v-if="isInWorkspace">Function</span>
-        <input
-          v-if="isInWorkspace"
-          type="text"
-          v-model="functionName"
-          placeholder="Function Name"
-          @input="updateBlock"
-        >
-        <span v-if="!isInWorkspace" class="toolbox-preview">
-          Function (parameters)
-        </span>
-      </div>
+    <div class="title-bar"> 
+      <span v-if="isInWorkspace" class="block-title">Function</span>
+      <input
+        v-if="isInWorkspace"
+        type="text"
+        v-model="functionName"
+        placeholder="Function Name"
+        @input="updateBlock"
+        class="function-name-input" 
+      >
+      <span v-if="!isInWorkspace" class="block-title">
+        Function (parameters)
+      </span>
       <button v-if="isInWorkspace" @click="removeFunctionAndEmit" class="remove-btn">
         X
       </button>
@@ -281,7 +280,7 @@ export default defineComponent({
   flex-direction: column;
   background-color: #6c5ce7;
   color: white;
-  transition: height 0.3s ease; /* Add transition for height */
+  transition: height 0.3s ease; 
 }
 
 .function-block.in-toolbox {
@@ -296,30 +295,26 @@ export default defineComponent({
   font-size: 1em;
 }
 
-.block-header {
+/* Title Bar Styling */
+.title-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.block-label {
-  display: flex;
-  align-items: center;
+.block-title {
   font-weight: bold;
+  white-space: nowrap; /* Prevent title from wrapping */
 }
 
-.block-label input {
-  margin-left: 5px;
+.function-name-input { 
+  flex-grow: 1; /* Allow input to fill available space */
+  margin-left: 5px; 
   padding: 2px 5px;
   border: 1px solid #ccc;
   border-radius: 3px;
   font-size: 14px;
-}
-
-.toolbox-preview {
-  font-style: italic;
-  font-size: 0.9em;
 }
 
 .nested-blocks {
@@ -327,11 +322,11 @@ export default defineComponent({
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
   padding: 5px;
-  cursor: pointer; /* Default cursor for the drop area */
+  cursor: pointer; 
 }
 
 .nested-blocks:hover {
-  background-color: rgba(0, 0, 0, 0.1); /* Subtle background change on hover */
+  background-color: rgba(0, 0, 0, 0.1); 
 }
 
 .placeholder {
@@ -340,6 +335,41 @@ export default defineComponent({
   font-style: italic;
   padding: 5px;
   cursor: default;
+}
+
+.parameters {
+  margin-bottom: 10px; 
+}
+
+.add-parameter {
+  display: flex;
+  margin-bottom: 5px; 
+}
+
+.add-parameter input {
+  flex-grow: 1;
+  margin-right: 5px;
+  padding: 2px 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.add-parameter button {
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.parameter {
+  margin-bottom: 5px; 
 }
 
 .remove-btn {

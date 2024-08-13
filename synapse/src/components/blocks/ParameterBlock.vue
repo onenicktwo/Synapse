@@ -6,7 +6,10 @@
     @dragstart="onDragStart"
     @drag="onDrag"
   >
-    <span>{{ block.name }}</span>
+    <span class="block-name">{{ block.name }}</span>
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
+      X
+    </button>
   </div>
 </template>
 
@@ -21,8 +24,12 @@ export default defineComponent({
       type: Object as PropType<ParameterBlockType>,
       required: true,
     },
+    isInWorkspace: {
+      type: Boolean,
+      default: false,
+    },
   },
-  emits: ['dragstart', 'drag'],
+  emits: ['dragstart', 'drag', 'remove'],
   setup(props, { emit }) {
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
@@ -46,13 +53,30 @@ export default defineComponent({
 
 <style scoped>
 .parameter-block {
-  display: inline-flex;
+  width: 100%;
+  max-width: 200px;
+  display: flex;
   align-items: center;
-  padding: 5px;
+  justify-content: space-between;
+  padding: 10px;
   border-radius: 5px;
-  margin-right: 5px;
-  margin-bottom: 5px;
   cursor: move;
-  user-select: none; /* Prevent text selection during drag */
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.block-name {
+  font-weight: bold;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  color: #ff0000;
+  position: absolute;
+  top: 5px;
+  right: 5px;
 }
 </style>
