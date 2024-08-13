@@ -10,48 +10,58 @@
       If (condition) Then ... Else ...
     </div>
     <template v-else>
-      <div class="condition-area">
-        <component
-          v-if="conditionBlock"
-          :key="conditionBlock.id"
-          :is="components[getBlockComponent(conditionBlock.type)]"
-          :block="conditionBlock"
-          :isInWorkspace="true"
-          @remove="removeConditionBlock"
-          @update="updateConditionBlock"
-        />
-        <div v-else class="placeholder" @drop.stop="handleConditionDrop" @dragover.prevent>
-          Drop condition here
+      <div class="area-container">
+        <div class="condition-area">
+          <component
+            v-if="conditionBlock"
+            :key="conditionBlock.id"
+            :is="components[getBlockComponent(conditionBlock.type)]"
+            :block="conditionBlock"
+            :isInWorkspace="true"
+            @remove="removeConditionBlock"
+            @update="updateConditionBlock"
+          />
+          <div v-else class="placeholder" @drop.stop="handleConditionDrop" @dragover.prevent>
+            Drop condition here
+          </div>
         </div>
       </div>
-      <div class="then-area">
-        <div class="then-label">Then</div>
-        <component
-          v-for="nestedBlock in thenBlocks"
-          :key="nestedBlock.id"
-          :is="components[getBlockComponent(nestedBlock.type)]"
-          :block="nestedBlock"
-          :isInWorkspace="true"
-          @remove="removeNestedBlock(nestedBlock.id)"
-          @update="updateNestedBlock"
-        />
-        <div v-if="thenBlocks.length === 0" class="placeholder" @drop.stop="handleNestedDrop" @dragover.prevent>
-          Drop blocks here
+      <div class="area-container">
+        <div class="then-area">
+          <div class="then-label">Then</div>
+          <div class="nested-blocks-container">
+            <component
+              v-for="nestedBlock in thenBlocks"
+              :key="nestedBlock.id"
+              :is="components[getBlockComponent(nestedBlock.type)]"
+              :block="nestedBlock"
+              :isInWorkspace="true"
+              @remove="removeNestedBlock(nestedBlock.id)"
+              @update="updateNestedBlock"
+            />
+            <div v-if="thenBlocks.length === 0" class="placeholder" @drop.stop="handleNestedDrop" @dragover.prevent>
+              Drop blocks here
+            </div>
+          </div>
         </div>
       </div>
-      <div class="else-area">
-        <div class="else-label">Else</div>
-        <component
-          v-for="elseBlock in elseBlocks"
-          :key="elseBlock.id"
-          :is="components[getBlockComponent(elseBlock.type)]"
-          :block="elseBlock"
-          :isInWorkspace="true"
-          @remove="removeElseBlock(elseBlock.id)"
-          @update="updateElseBlock"
-        />
-        <div v-if="elseBlocks.length === 0" class="placeholder" @drop.stop="handleElseDrop" @dragover.prevent>
-          Drop blocks here
+      <div class="area-container">
+        <div class="else-area">
+          <div class="else-label">Else</div>
+          <div class="nested-blocks-container">
+            <component
+              v-for="elseBlock in elseBlocks"
+              :key="elseBlock.id"
+              :is="components[getBlockComponent(elseBlock.type)]"
+              :block="elseBlock"
+              :isInWorkspace="true"
+              @remove="removeElseBlock(elseBlock.id)"
+              @update="updateElseBlock"
+            />
+            <div v-if="elseBlocks.length === 0" class="placeholder" @drop.stop="handleElseDrop" @dragover.prevent>
+              Drop blocks here
+            </div>
+          </div>
         </div>
       </div>
     </template>
@@ -210,7 +220,7 @@ export default defineComponent({
 .if-then-block {
   padding: 10px;
   border-radius: 5px;
-  cursor: move; 
+  cursor: move;
   position: relative;
   margin-bottom: 10px;
   display: flex;
@@ -243,21 +253,34 @@ export default defineComponent({
   margin-bottom: 15px;
 }
 
+.area-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .then-area,
 .else-area {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  width: 100%;
 }
 
-.condition-area > *,
+.nested-blocks-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
 .then-area > *,
 .else-area > * {
   width: 100%;
   margin-bottom: 10px;
 }
 
-.condition-area > *:last-child,
 .then-area > *:last-child,
 .else-area > *:last-child {
   margin-bottom: 0;
@@ -276,7 +299,7 @@ export default defineComponent({
   padding: 10px;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
-  cursor: pointer; 
+  cursor: pointer;
 }
 
 .remove-btn {
