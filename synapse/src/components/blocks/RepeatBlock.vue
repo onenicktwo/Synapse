@@ -1,118 +1,134 @@
 <template>
   <div
-    class="block repeat-block"
-    :style="{ backgroundColor: block.color }"
+    class="repeat-block"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
     draggable="true"
-    @dragstart="onDragStart"
-    @dragend="onDragEnd"
+    @dragstart="handleDragStart"
   >
-    <div class="block-label">
-      <span>Repeat</span>
-      <input
-        v-model="repeatCount"
-        type="number"
-        min="1"
-        class="repeat-input"
-        @input="updateRepeatCount"
-      />
-      <span>times</span>
+    <div v-if="!isInWorkspace" class="toolbox-preview">
+      Repeat...
     </div>
-    <div class="nested-blocks-container">
+    <template v-else>
       <div
-        class="nested-blocks"
-        ref="nestedBlocksContainer"
-        @dragover.prevent
-        @drop.stop="onDrop"
+        class="block-container"
+        @dragstart="onDragStart"
+        @dragend="onDragEnd"
       >
-        <component
-          v-for="nestedBlock in nestedBlocks"
-          :key="nestedBlock.id"
-          :is="components[getBlockComponent(nestedBlock.type)]"
-          :block="nestedBlock"
-          :isInWorkspace="isInWorkspace"
-          @remove="removeNestedBlock(nestedBlock.id)"
-          @update="updateNestedBlock"
-          draggable="true"
-          @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, nestedBlock)"
-        />
-        <div
-          v-if="nestedBlocks.length === 0"
-          class="placeholder"
-          @drop.stop="onDrop"
-          @dragover.prevent
-        >
-          Drop blocks here
+        <div class="block-label">
+          <span>Repeat</span>
+          <input
+            v-model.number="repeatCount"
+            type="number"
+            min="1"
+            class="repeat-input"
+            @input="updateRepeatCount"
+          />
+          <span>times</span>
         </div>
+        <div class="nested-blocks-container">
+          <div
+            class="nested-blocks"
+            ref="nestedBlocksContainer"
+            @dragover.prevent
+            @drop.stop="onDrop"
+          >
+            <component
+              v-for="nestedBlock in nestedBlocks"
+              :key="nestedBlock.id"
+              :is="components[getBlockComponent(nestedBlock.type)]"
+              :block="nestedBlock"
+              :isInWorkspace="isInWorkspace"
+              @remove="removeNestedBlock(nestedBlock.id)"
+              @update="updateNestedBlock"
+              draggable="true"
+              @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, nestedBlock)"
+            />
+            <div
+              v-if="nestedBlocks.length === 0"
+              class="placeholder"
+              @drop.stop="onDrop"
+              @dragover.prevent
+            >
+              Drop blocks here
+            </div>
+          </div>
+        </div>
+        <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
+          X
+        </button>
       </div>
-    </div>
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
-      X
-    </button>
+    </template>
   </div>
 </template>
 
+<script lang="ts">
+import { defineComponent, PropType, ref, onMounted } from 'vue';
+import { Block, blockComponents, RepeatBlock as RepeatBlockType } from './types';
+import { getBlockComponent } from '../blockUtils';
 
-  <script lang="ts">
-  import { defineComponent, PropType, ref, onMounted} from 'vue';
-  import { Block, blockComponents, RepeatBlock as RepeatBlockType } from './types';
-  import { getBlockComponent } from '../blockUtils';
-
-  export default defineComponent({
-    name: 'RepeatBlock',
-    props: {
-      block: {
-        type: Object as PropType<RepeatBlockType>,
-        required: true,
-      },
-      isInWorkspace: {
-        type: Boolean,
-        default: false,
-      },
+export default defineComponent({
+  name: 'RepeatBlock',
+  props: {
+    block: {
+      type: Object as PropType<RepeatBlockType>,
+      required: true,
     },
-    emits: ['remove', 'update'],
-    setup(props, { emit }) {
+    isInWorkspace: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['remove', 'update'],
+  setup(props, { emit }) {
     const components = blockComponents;
-      const repeatCount = ref(props.block.repeatCount || 1);
-      const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
-      const nestedBlocksContainer = ref<HTMLElement | null>(null);
-  
-      const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat'];
-  
-      onMounted(() => {
-        if (nestedBlocksContainer.value) {
-          const resizeObserver = new ResizeObserver(() => {
-            nestedBlocksContainer.value!.style.height = 'auto';
-          });
-  
-          nestedBlocksContainer.value.childNodes.forEach((childNode) => {
-            resizeObserver.observe(childNode as HTMLElement);
-          });
-        }
-      });
-  
-      const updateBlock = () => {
-        const updatedBlock: RepeatBlockType = {
-          ...props.block,
-          repeatCount: repeatCount.value,
-          nestedBlocks: nestedBlocks.value
-        };
-        emit('update', updatedBlock);
+    const repeatCount = ref(props.block.repeatCount || 1);
+    const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
+    const nestedBlocksContainer = ref<HTMLElement | null>(null);
+
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat'];
+
+    onMounted(() => {
+      if (nestedBlocksContainer.value) {
+        const resizeObserver = new ResizeObserver(() => {
+          nestedBlocksContainer.value!.style.height = 'auto';
+        });
+
+        resizeObserver.observe(nestedBlocksContainer.value);
+      }
+    });
+
+    const updateBlock = () => {
+      const updatedBlock: RepeatBlockType = {
+        ...props.block,
+        repeatCount: repeatCount.value,
+        nestedBlocks: nestedBlocks.value
       };
-  
-      const updateRepeatCount = () => {
-        updateBlock();
-      };
-  
-      const removeNestedBlock = (id: string) => {
-        nestedBlocks.value = nestedBlocks.value.filter(block => block.id !== id);
-        updateBlock();
-      };
-  
-      const updateNestedBlock = (updatedBlock: Block) => {
+      emit('update', updatedBlock);
+    };
+
+    const updateRepeatCount = () => {
+      updateBlock();
+    };
+
+    const removeNestedBlock = (id: string) => {
+      nestedBlocks.value = nestedBlocks.value.filter(block => block.id !== id);
+      updateBlock();
+    };
+
+    const updateNestedBlock = (updatedBlock: Block) => {
       const index = nestedBlocks.value.findIndex(block => block.id === updatedBlock.id);
       if (index !== -1) {
         nestedBlocks.value[index] = updatedBlock;
         updateBlock();
+      }
+    };
+
+    const handleDragStart = (event: DragEvent) => {
+      if (!props.isInWorkspace) {
+        if (event.dataTransfer) {
+          event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+          event.dataTransfer.effectAllowed = 'copy';
+        }
       }
     };
 
@@ -158,6 +174,7 @@
       updateRepeatCount,
       removeNestedBlock,
       updateNestedBlock,
+      handleDragStart,
       onDragStart,
       onDragEnd,
       onDrop,
@@ -170,13 +187,26 @@
 
 <style scoped>
 .repeat-block {
-  padding: 10px;
-  border-radius: 5px;
+  display: inline-block;
   cursor: move;
   position: relative;
   margin-bottom: 10px;
-  transition: height 0.3s ease;
-  display: inline-block; /* Added to make the block width flexible */
+}
+
+.in-toolbox,
+.block-container {
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: purple;
+  color: #fff;
+}
+
+.toolbox-preview {
+  font-weight: bold;
+}
+
+.repeat-count {
+  color: #fff;
 }
 
 .block-label {
@@ -226,13 +256,14 @@
 }
 
 .remove-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  color: #ff0000;
+position: absolute;
+top: 5px;
+right: 5px;
+background: none;
+border: none;
+cursor: pointer;
+font-weight: bold;
+color: #ff0000;
 }
+
 </style>
