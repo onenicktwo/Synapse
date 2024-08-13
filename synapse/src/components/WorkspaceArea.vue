@@ -57,14 +57,8 @@ export default defineComponent({
       if (event.dataTransfer) {
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
         
-        // Check if the dropped block is a parameter
-        if (blockData.type === 'parameter') {
-          // If it's a parameter, don't add it to the workspace
-          console.warn('Parameters cannot be added directly to the workspace');
-          return;
-        }
-
-        const newBlock: Block = {
+        if (blockData.type == 'function') {
+          const newBlock: Block = {
           ...blockData,
           id: Date.now().toString(),
           position: {
@@ -73,6 +67,7 @@ export default defineComponent({
           }
         };
         this.addBlock(newBlock);
+        }
       }
     },
 
