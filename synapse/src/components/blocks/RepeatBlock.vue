@@ -1,39 +1,57 @@
 <template>
-    <div
-      class="block repeat-block"
-      :style="{ backgroundColor: block.color }"
-      draggable="true"
-      @dragstart="onDragStart"
-      @dragend="onDragEnd"
-    >
-      <div class="block-label">
-        <span>Repeat</span>
-        <input
-          v-model="repeatCount"
-          type="number"
-          min="1"
-          class="repeat-input"
-          @input="updateRepeatCount"
-        />
-        <span>times</span>
-      </div>
-      <div class="nested-blocks" ref="nestedBlocksContainer" @dragover.prevent @drop.stop="onDrop">
+  <div
+    class="block repeat-block"
+    :style="{ backgroundColor: block.color }"
+    draggable="true"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
+  >
+    <div class="block-label">
+      <span>Repeat</span>
+      <input
+        v-model="repeatCount"
+        type="number"
+        min="1"
+        class="repeat-input"
+        @input="updateRepeatCount"
+      />
+      <span>times</span>
+    </div>
+    <div class="nested-blocks-container">
+      <div
+        class="nested-blocks"
+        ref="nestedBlocksContainer"
+        @dragover.prevent
+        @drop.stop="onDrop"
+      >
         <component
           v-for="nestedBlock in nestedBlocks"
           :key="nestedBlock.id"
           :is="components[getBlockComponent(nestedBlock.type)]"
           :block="nestedBlock"
-          :isInWorkspace="true"
+          :isInWorkspace="isInWorkspace"
           @remove="removeNestedBlock(nestedBlock.id)"
           @update="updateNestedBlock"
           draggable="true"
           @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, nestedBlock)"
         />
+        <div
+          v-if="nestedBlocks.length === 0"
+          class="placeholder"
+          @drop.stop="onDrop"
+          @dragover.prevent
+        >
+          Drop blocks here
+        </div>
       </div>
-      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
     </div>
-  </template>
-  
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
+      X
+    </button>
+  </div>
+</template>
+
+
   <script lang="ts">
   import { defineComponent, PropType, ref, onMounted} from 'vue';
   import { Block, blockComponents, RepeatBlock as RepeatBlockType } from './types';
@@ -152,13 +170,13 @@
 
 <style scoped>
 .repeat-block {
-  width: 200px;
   padding: 10px;
   border-radius: 5px;
   cursor: move;
   position: relative;
   margin-bottom: 10px;
   transition: height 0.3s ease;
+  display: inline-block; /* Added to make the block width flexible */
 }
 
 .block-label {
@@ -180,11 +198,31 @@
   border: 1px solid #ccc;
 }
 
-.nested-blocks {
-  min-height: 30px;
+.nested-blocks-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 5px;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
+}
+
+.nested-blocks {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.placeholder {
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  text-align: center;
   padding: 5px;
+  border: 1px dashed rgba(255, 255, 255, 0.5);
+  border-radius: 3px;
+  cursor: pointer;
 }
 
 .remove-btn {
