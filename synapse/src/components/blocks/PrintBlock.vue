@@ -1,5 +1,9 @@
 <template>
-  <print-block-template :block="block" :isInWorkspace="isInWorkspace" @remove="$emit('remove')">
+  <print-block-template 
+    :block="block" 
+    :isInWorkspace="isInWorkspace" 
+    @remove="$emit('remove')"
+  >
     <template #text-input>
       <div class="block-input-container">
         <div class="input-container" :class="{ 'has-block': nestedBlock }">
@@ -8,11 +12,11 @@
             :key="nestedBlock.id"
             :is="components[getBlockComponent(nestedBlock.type)]"
             :block="nestedBlock"
-            :isInWorkspace="true"
+            :isInWorkspace="true" 
             @remove="removeNestedBlock"
             @update="updateNestedBlock"
             draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event)"
+            @dragstart.stop="handleInputDragStart"
           />
           <div v-else class="block-input" @drop.stop="handleInputDrop" @dragover.prevent>
             <input 
@@ -31,14 +35,14 @@
 <script lang="ts">
 import { computed, defineComponent, PropType, ref } from 'vue';
 import PrintBlockTemplate from './PrintBlockTemplate.vue';
-import { blockComponents, PrintBlock as PrintBlockType } from './types';
-import { Block } from './types';
-import { getBlockComponent } from '../blockUtils';
+import { blockComponents, PrintBlock as PrintBlockType } from './types'; 
+import { Block } from './types'; 
+import { getBlockComponent } from '../blockUtils'; 
 
 export default defineComponent({
-  name: 'PrintBlock',
+  name: 'PrintBlock', 
   components: {
-    PrintBlockTemplate
+    PrintBlockTemplate 
   },
   props: {
     block: {
@@ -58,9 +62,9 @@ export default defineComponent({
   setup(props, { emit }) {
     const components = computed(() => blockComponents);
     const inputValue = ref(props.block.inputs[0].default || '');
-    const nestedBlock = ref<Block | null>(props.block.nestedBlock|| null);
+    const nestedBlock = ref<Block | null>(props.block.nestedBlock || null);
 
-    const allowedInputBlocks = ['variable', 'parameter'];
+    const allowedInputBlocks = ['variable', 'parameter', 'mathOperator']; 
 
     const updateBlock = () => {
       const updatedBlock: PrintBlockType = {
@@ -91,7 +95,7 @@ export default defineComponent({
       event.stopPropagation();
       if (event.dataTransfer) {
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-        if (allowedInputBlocks.includes(blockData.type)) {
+        if (allowedInputBlocks.includes(blockData.type)) { 
           const newBlock: Block = {
             ...blockData,
             id: Date.now().toString()
@@ -105,7 +109,7 @@ export default defineComponent({
     const handleInputDragStart = (event: DragEvent) => {
       if (nestedBlock.value) {
         event.dataTransfer?.setData('text/plain', JSON.stringify(nestedBlock.value));
-        event.dataTransfer!.effectAllowed = 'copy';
+        event.dataTransfer!.effectAllowed = 'copy'; 
       }
     };
 
@@ -125,8 +129,21 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.block-input-container {
-  width: 100%;
+/* Container for the PrintBlock component */
+.print-block-container {
+  display: flex;
+  flex-direction: column; /* Stacks children vertically */
+  width: 100%; /* Ensures it takes full width */
+  box-sizing: border-box; /* Includes padding and border in element's total width and height */
+}
+
+/* Styling for the input container within the PrintBlock */
+.block-input-container,
+.input-container {
+  display: flex;
+  flex-direction: column; /* Allows vertical stacking */
+  align-items: stretch; /* Stretches items to fill container width */
+  width: 100%; /* Ensures it takes full width */
 }
 
 .input-container {
@@ -135,20 +152,23 @@ export default defineComponent({
   border-radius: 5px;
   padding: 5px;
   display: flex;
-  align-items: center;
-  overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.1); /* Light background */
+  flex-direction: column; /* Allows vertical stacking */
+  align-items: stretch; /* Ensures content fills container width */
+  overflow: auto; /* Allows scrolling if content overflows */
+  background-color: rgba(255, 255, 255, 0.1); 
 }
 
 .input-container.has-block {
   width: 100%;
-  border: none; /* Remove dashed border when block is present */
+  border: none; 
+  overflow: visible; /* Ensures nested block is fully visible */
 }
 
 .block-input {
   width: 100%;
   display: flex;
-  align-items: center;
+  flex-direction: column; /* Stacks input and nested block vertically */
+  align-items: stretch; /* Ensures children stretch to fit container */
 }
 
 .block-input input {
@@ -156,12 +176,20 @@ export default defineComponent({
   padding: 5px;
   border: none;
   border-radius: 3px;
-  background-color: transparent; /* Transparent input background */
-  color: white; /* Example: White text color */
+  background-color: transparent; 
+  color: white; 
 }
 
-/* Optional: Placeholder styling */
 .block-input input::placeholder {
-  color: rgba(255, 255, 255, 0.7); /* Example: Light gray placeholder */
+  color: rgba(255, 255, 255, 0.7); 
 }
+
+/* Styling for nested blocks */
+.math-block, .print-block {
+  flex-shrink: 0; /* Prevents block from shrinking */
+  box-sizing: border-box;
+  overflow: visible; /* Ensures block is not clipped */
+  width: 100%; /* Ensures it stretches to fill parent width */
+}
+
 </style>

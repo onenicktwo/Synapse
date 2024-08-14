@@ -1,3 +1,4 @@
+
 <template>
   <div 
     class="block print-block"
@@ -76,3 +77,4 @@ export default defineComponent({
   color: #ff0000;
 }
 </style>
+
