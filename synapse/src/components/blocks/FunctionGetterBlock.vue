@@ -42,6 +42,12 @@
           </div>
         </div>
       </div>
+      <div class="return-value" v-if="selectedFunction.returnBlock">
+        <label>Return Value:</label>
+        <div class="input-container">
+          {{ selectedFunction.returnBlock.label }}
+        </div>
+      </div>
     </div>
 
     <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
@@ -111,6 +117,7 @@ export default defineComponent({
           functionId: selectedFunction.value.id,
           parameterValues: validParameterValues,
           nestedBlocks: nestedBlocks.value,
+          returnBlock: selectedFunction.value.returnBlock,
         });
       }
     };
@@ -175,6 +182,21 @@ export default defineComponent({
 
 
 <style scoped>
+.return-value {
+  margin-top: 10px;
+}
+
+.return-value label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.return-value .input-container {
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 5px;
+  border-radius: 3px;
+}
+
 .function-getter-block {
   width: 100%;
   max-width: 200px;
