@@ -44,29 +44,46 @@
     </div>
 
     <div
-      v-if="isInWorkspace"
-      class="nested-blocks"
-      ref="nestedBlocksContainer"
-      @dragover.prevent="handleDragOver"
-      @drop.stop="onDrop"
-    >
-      <component
-        v-for="nestedBlock in nestedBlocks"
-        :key="nestedBlock.id"
-        :is="components[getBlockComponent(nestedBlock.type)]"
-        :block="nestedBlock"
-        :isInWorkspace="true"
-        @remove="removeNestedBlock(nestedBlock.id)"
-        @update="updateNestedBlock"
+    v-if="isInWorkspace"
+    class="nested-blocks-container"
+    @drop.stop="onDrop"
+  >
+    <component
+      v-for="nestedBlock in nestedBlocks"
+      :key="nestedBlock.id"
+      :is="components[getBlockComponent(nestedBlock.type)]"
+      :block="nestedBlock"
+      :isInWorkspace="true"
+      @remove="removeNestedBlock(nestedBlock.id)"
+      @update="updateNestedBlock"
+      draggable="true"
+      @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, nestedBlock)"
+    />
+    <div v-if="nestedBlocks.length === 0" class="placeholder">
+      Drop blocks here
+    </div>
+  </div>
+
+  <div v-if="isInWorkspace" class="return-section">
+      <label>
+        <input type="checkbox" v-model="hasReturn" @change="toggleReturn">
+        Function returns a value
+      </label>
+    </div>
+
+    <div v-if="isInWorkspace && hasReturn" class="return-block-container">
+      <div class="return-title">Drag return block to function body:</div>
+      <ReturnBlock 
+        :block="createEmptyReturnBlock()"
+        :isInWorkspace="false"
+        :isEditable="false"
         draggable="true"
-        @dragstart.stop="(event: DragEvent) => handleNestedDragStart(event, nestedBlock)"
+        @dragstart="onReturnDragStart"
       />
-      <div v-if="nestedBlocks.length === 0" class="placeholder">
-        Drop blocks here
-      </div>
     </div>
   </div>
 </template>
+
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
@@ -75,15 +92,18 @@ import {
   FunctionBlock as FunctionBlockType, 
   Block, 
   blockComponents,
-  ParameterBlock as ParameterBlockType 
+  ParameterBlock as ParameterBlockType,
+  ReturnBlock as ReturnBlockType,
 } from './types';
 import { getBlockComponent } from '../blockUtils';
-import ParameterBlock from './ParameterBlock.vue'; 
+import ParameterBlock from './ParameterBlock.vue';
+import ReturnBlock from './ReturnBlock.vue';
 
 export default defineComponent({
   name: 'FunctionBlock',
   components: {
     ParameterBlock,
+    ReturnBlock,
   },
   props: {
     block: {
@@ -102,6 +122,7 @@ export default defineComponent({
     const parameters = ref<ParameterBlockType[]>(props.block.parameters || []);
     const components = blockComponents;
     const newParameterName = ref('');
+    const hasReturn = ref(props.block.hasReturn || false);
 
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
@@ -109,12 +130,30 @@ export default defineComponent({
         event.dataTransfer.effectAllowed = 'copy';
       }
     };
-
+    
     const handleParameterDragStart = (event: DragEvent, parameter: ParameterBlockType) => {
       event.stopPropagation();
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(parameter));
         event.dataTransfer.effectAllowed = 'move';
+      }
+    };
+
+    const createEmptyReturnBlock = (): ReturnBlockType => ({
+      id: Date.now().toString(),
+      type: 'return',
+      label: 'Return',
+      color: '#FF4500',
+      inputs: [],
+      valueBlock: null
+    });
+
+    const onReturnDragStart = (event: DragEvent) => {
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const newReturnBlock = createEmptyReturnBlock();
+        event.dataTransfer.setData('text/plain', JSON.stringify(newReturnBlock));
+        event.dataTransfer.effectAllowed = 'copy';
       }
     };
 
@@ -126,24 +165,32 @@ export default defineComponent({
       getBlockComponent,
       handleParameterDragStart,
       parameters, 
-      newParameterName
+      newParameterName,
+      hasReturn,
+      createEmptyReturnBlock,
+      onReturnDragStart,
     };
   },
+
   computed: {
     ...mapGetters('functions', ['getFunctionByName']),
   },
+
   methods: {
     ...mapActions('functions', ['addFunction', 'removeFunction', 'updateFunction']),
+    
     updateBlock() {
       this.$emit('update', {
         ...this.block,
         functionName: this.functionName,
         nestedBlocks: this.nestedBlocks,
-        parameters: this.parameters, 
+        parameters: this.parameters,
+        hasReturn: this.hasReturn,
       });
-
+      
       this.updateOrCreateFunction();
     },
+
     updateOrCreateFunction() {
       if (typeof this.functionName === 'string' && this.functionName !== '') {
         const existingFunction = this.getFunctionByName(this.functionName);
@@ -151,19 +198,22 @@ export default defineComponent({
           this.updateFunction({
             ...existingFunction,
             nestedBlocks: this.nestedBlocks,
-            parameters: this.parameters, 
+            parameters: this.parameters,
+            hasReturn: this.hasReturn,
           });
         } else {
           this.addFunction({
             name: this.functionName,
             nestedBlocks: this.nestedBlocks,
-            parameters: this.parameters, 
+            parameters: this.parameters,
+            hasReturn: this.hasReturn,
           });
         }
       } else {
         console.error('Function block has invalid name');
       }
     },
+
     removeFunctionAndEmit() {
       const existingFunction = this.getFunctionByName(this.functionName);
       if (existingFunction) {
@@ -174,10 +224,12 @@ export default defineComponent({
         this.$emit('remove');
       }
     },
+
     removeNestedBlock(id: string) {
       this.nestedBlocks = this.nestedBlocks.filter((block) => block.id !== id);
       this.updateBlock();
     },
+
     updateNestedBlock(updatedBlock: Block) {
       const index = this.nestedBlocks.findIndex(
         (block) => block.id === updatedBlock.id
@@ -187,6 +239,7 @@ export default defineComponent({
         this.updateBlock();
       }
     },
+
     onDrop(event: DragEvent) {
       const allowedNestedBlocks = [
         'print',
@@ -195,8 +248,12 @@ export default defineComponent({
         'variable',
         'repeat',
         'functionGetter',
-        'parameter'
+        'parameter',
+        'variableChange'
       ];
+      if (this.hasReturn) {
+        allowedNestedBlocks.push('return');
+      }
       event.stopPropagation();
       if (event.dataTransfer) {
         const blockData = JSON.parse(
@@ -212,6 +269,7 @@ export default defineComponent({
         }
       }
     },
+
     handleNestedDragStart(event: DragEvent, block: Block) {
       event.stopPropagation();
       if (event.dataTransfer) {
@@ -219,9 +277,7 @@ export default defineComponent({
         event.dataTransfer.effectAllowed = 'copy';
       }
     },
-    handleDragOver(event: DragEvent) {
-      event.preventDefault(); // Necessary for drop to work
-    },
+
     addParameter() {
       if (this.newParameterName.trim() !== '') {
         this.parameters.push({
@@ -237,19 +293,30 @@ export default defineComponent({
         this.updateBlock();
       }
     },
+
     updateParameter(index: number, updatedParameter: ParameterBlockType) {
       if (index >= 0 && index < this.parameters.length) {
         this.parameters[index] = updatedParameter;
         this.updateBlock();
       }
     },
+
     removeParameter(index: number) {
       if (index >= 0 && index < this.parameters.length) {
         this.parameters.splice(index, 1);
         this.updateBlock();
       }
     },
+
+    toggleReturn() {
+      if (!this.hasReturn) {
+        // Remove all return blocks when turning off the return checkbox
+        this.nestedBlocks = this.nestedBlocks.filter(block => block.type !== 'return');
+      }
+      this.updateBlock();
+    },
   },
+
   watch: {
     functionName(newName, oldName) {
       if (oldName && oldName !== newName) {
@@ -261,6 +328,7 @@ export default defineComponent({
       this.updateOrCreateFunction();
     },
   },
+
   mounted() {
     if (this.isInWorkspace && this.functionName) {
       this.updateOrCreateFunction();
@@ -295,7 +363,6 @@ export default defineComponent({
   font-size: 1em;
 }
 
-/* Title Bar Styling */
 .title-bar {
   display: flex;
   justify-content: space-between;
@@ -305,45 +372,89 @@ export default defineComponent({
 
 .block-title {
   font-weight: bold;
-  white-space: nowrap; /* Prevent title from wrapping */
+  white-space: nowrap;
 }
 
-.function-name-input { 
-  flex-grow: 1; /* Allow input to fill available space */
-  margin-left: 5px; 
+.function-name-input {
+  flex-grow: 1;
+  margin-left: 5px;
   padding: 2px 5px;
   border: 1px solid #ccc;
   border-radius: 3px;
   font-size: 14px;
 }
 
-.nested-blocks {
+.nested-blocks-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
   min-height: 30px;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
   padding: 5px;
-  cursor: pointer; 
+  margin-bottom: 10px;
 }
 
-.nested-blocks:hover {
-  background-color: rgba(0, 0, 0, 0.1); 
+.return-block-container {
+  margin-top: 10px;
+}
+
+.return-title {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .placeholder {
+  color: rgba(255, 255, 255, 0.5);
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
-  font-style: italic;
+  width: 100%;
+  padding: 10px;
+}
+
+.return-section {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.return-section label {
+  display: flex;
+  align-items: center;
+}
+
+.return-section input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.return-block-container {
+  margin-top: 10px;
   padding: 5px;
-  cursor: default;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+.return-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Style for the draggable return block */
+.return-block-container :deep(.return-block) {
+  cursor: move;
+  padding: 5px;
+  background-color: #FF4500;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 5px;
 }
 
 .parameters {
-  margin-bottom: 10px; 
+  margin-bottom: 10px;
 }
 
 .add-parameter {
   display: flex;
-  margin-bottom: 5px; 
+  margin-bottom: 5px;
 }
 
 .add-parameter input {
@@ -352,32 +463,18 @@ export default defineComponent({
   padding: 2px 5px;
   border: 1px solid #ccc;
   border-radius: 3px;
-  font-size: 14px;
 }
 
 .add-parameter button {
-  background-color: #4CAF50; /* Green */
-  border: none;
+  padding: 2px 5px;
+  background-color: #4CAF50;
   color: white;
-  padding: 4px 8px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 14px;
+  border: none;
   border-radius: 3px;
   cursor: pointer;
 }
 
 .parameter {
-  margin-bottom: 5px; 
-}
-
-.remove-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  color: #ff0000;
-  padding: 2px 5px; 
+  margin-bottom: 5px;
 }
 </style>

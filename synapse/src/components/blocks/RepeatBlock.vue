@@ -85,7 +85,7 @@ export default defineComponent({
     const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
     const nestedBlocksContainer = ref<HTMLElement | null>(null);
 
-    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat'];
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'functionGetter'];
 
     onMounted(() => {
       if (nestedBlocksContainer.value) {

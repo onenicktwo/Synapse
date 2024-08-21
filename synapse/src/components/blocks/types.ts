@@ -91,21 +91,28 @@ export interface FunctionBlock extends Block {
   functionName: string;
   nestedBlocks: Block[];
   parameters: ParameterBlock[]; 
+  hasReturn: boolean;
 }
 
 export interface FunctionGetterBlock extends Block {
   type: 'functionGetter';
   functionId: string;
   parameterValues: string[];
-  nestedBlocks: (Block | null)[]; // Add this line
+  nestedBlocks: (Block | null)[]; 
+  hasReturn: boolean;
+}
+
+export interface ReturnBlock extends Block {
+  type: 'return';
+  valueBlock: Block | null;
 }
 
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 
-| 'variableChange' | 'function' | 'functionGetter' | 'parameter';
+| 'variableChange' | 'function' | 'functionGetter' | 'parameter' | 'return';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
 | 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock' | 'FunctionBlock' | 'FunctionGetterBlock'
-| 'ParameterBlock';
+| 'ParameterBlock' | 'ReturnBlock';
 
 export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   print: 'PrintBlock',
@@ -119,7 +126,8 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   variableChange: 'VariableChangeBlock',
   function: 'FunctionBlock',
   functionGetter: 'FunctionGetterBlock',
-  parameter: 'ParameterBlock'
+  parameter: 'ParameterBlock',
+  return: 'ReturnBlock',
 };
 
 export const blockComponents: Record<BlockComponentName, Component> = {
@@ -136,4 +144,5 @@ export const blockComponents: Record<BlockComponentName, Component> = {
   FunctionBlock: markRaw(require('./FunctionBlock.vue').default),
   FunctionGetterBlock: markRaw(require('./FunctionGetterBlock.vue').default),
   ParameterBlock: markRaw(require('./ParameterBlock.vue').default),
+  ReturnBlock: markRaw(require('./ReturnBlock.vue').default),
 };

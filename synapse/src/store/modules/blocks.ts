@@ -19,9 +19,16 @@ interface BlocksState {
 const state: BlocksState = {
   blocks: [
     {
+      id: 'return',
+      type: 'return',
+      label: 'Return',
+      color: '#FF4500', 
+      inputs: []
+    },
+    {
       id: 'parameter',
       type: 'parameter',
-      label: 'Parameter', // This label won't be used in the FunctionBlock
+      label: 'Parameter', 
       color: '#CCCCCC', 
       inputs: []
     },

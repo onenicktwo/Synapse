@@ -27,7 +27,7 @@ export default defineComponent({
   computed: {
     ...mapGetters('blocks', ['getAllBlocks']),
     blocks(): Block[] {
-      return this.getAllBlocks.filter((block: { type: string; }) => block.type !== 'parameter');
+      return this.getAllBlocks.filter((block: { type: string; }) => (block.type !== 'parameter' && block.type !== 'return' ));
     }
   },
   methods: {

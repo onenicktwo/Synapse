@@ -90,7 +90,7 @@ export default defineComponent({
     const leftInput = ref(props.block.leftInput || '');
     const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable'];
+    const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
 
     const updateBlock = () => {
       const updatedBlock: ComparisonOperatorBlockType = {

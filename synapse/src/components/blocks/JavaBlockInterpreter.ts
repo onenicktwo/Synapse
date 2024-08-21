@@ -13,6 +13,7 @@ import {
   FunctionBlock,
   FunctionGetterBlock,
   ParameterBlock,
+  ReturnBlock,
 } from "./types";
 
 class JavaBlockInterpreter {
@@ -27,7 +28,6 @@ class JavaBlockInterpreter {
       this.javaCode = [`class ${workspaceName} {`];
       this.indentationLevel = 2;
 
-      // Set the active workspace to get its blocks
       store.dispatch('workspace/setActiveWorkspace', 
         store.state.workspace.workspaces.find((w: { name: any; }) => w.name === workspaceName)?.id
       );
@@ -40,13 +40,13 @@ class JavaBlockInterpreter {
 
       this.javaCode.push('}');
       allClassesCode = allClassesCode.concat(this.javaCode);
-      allClassesCode.push(''); // Add an empty line between classes
+      allClassesCode.push('');
     }
 
     return allClassesCode.join('\n');
   }
 
-  private generateBlockCode(block: any): string | void {
+  private generateBlockCode(block: Block): string | void {
     switch (block.type) {
       case 'print':
         return this.generatePrintBlockCode(block as PrintBlock);
@@ -68,68 +68,75 @@ class JavaBlockInterpreter {
         return this.generateFunctionGetterBlockCode(block as FunctionGetterBlock);
       case 'parameter':
         return this.generateParameterCode(block as ParameterBlock);
+      case 'return':
+        return this.generateReturnCode(block as ReturnBlock);
       default:
         console.warn(`Unexpected block type: ${block.type}`);
-        break;
+        return '';
     }
+  }
+
+  private generateReturnCode(block: ReturnBlock): string {
+    if (block.valueBlock) {
+      const value = this.generateBlockCode(block.valueBlock);
+      return `return ${value};`;
+    }
+    return 'return 0;';
   }
 
   private generateParameterCode(block: ParameterBlock): string {
     return block.name;
   }
 
-  private generateFunctionGetterBlockCode(block: FunctionGetterBlock): void {
+  private generateFunctionGetterBlockCode(block: FunctionGetterBlock): string {
     const funcBlock = store.getters['functions/getFunctionById'](block.functionId);
     if (!funcBlock) {
       console.error(`Function not found with ID: ${block.functionId}`);
-      return;
+      return '';
     }
   
-    let parameterString = '';
-    if (block.nestedBlocks && block.nestedBlocks.length > 0) {
-      const paramValues = block.nestedBlocks.map((nestedBlock, index) => {
-        if (nestedBlock) {
-          if (nestedBlock.type === 'variable') {
-            return (nestedBlock as VariableBlock).variableId;
-          } else {
-            return this.generateBlockCode(nestedBlock);
-          }
-        } else {
-          const value = block.parameterValues[index];
-          return isNaN(Number(value)) ? `"${value}"` : value;
-        }
-      });
-      parameterString = paramValues.join(', ');
-    }
+    const paramValues = block.nestedBlocks.map((nestedBlock, index) => {
+      if (nestedBlock) {
+        return this.generateBlockCode(nestedBlock) || block.parameterValues[index] || '0';
+      } else {
+        return block.parameterValues[index] || '0';
+      }
+    });
+    const parameterString = paramValues.join(', ');
   
-    this.addLine(`${funcBlock.name}(${parameterString});`);
+    return `${funcBlock.name}(${parameterString})`;
   }
 
   private generateFunctionBlockCode(block: FunctionBlock): void {
-    const parameterString = block.parameters.map((param: ParameterBlock) => {
-      return `int ${param.name}`; 
-    }).join(', ');
-
+    const parameterString = block.parameters.map((param: ParameterBlock) => `int ${param.name}`).join(', ');
+  
+    const returnType = block.hasReturn ? 'int' : 'void';
+  
     if (block.functionName === 'main') {
       this.addLine('public static void main(String[] args) {');
     } else {
-      this.addLine(`public static void ${block.functionName}(${parameterString}) {`); 
+      this.addLine(`public static ${returnType} ${block.functionName}(${parameterString}) {`); 
     }
-
+  
     for (const nestedBlock of block.nestedBlocks) {
       this.generateBlockCode(nestedBlock);
+    }
+
+    if (block.hasReturn) {
+      const returnBlock = block.nestedBlocks.find(b => b.type === 'return') as ReturnBlock | undefined;
+      if (returnBlock && returnBlock.valueBlock) {
+        const returnValue = this.generateBlockCode(returnBlock.valueBlock);
+        this.addLine(`return ${returnValue};`);
+      }
     }
     this.addLine('}');
   }
 
   private generatePrintBlockCode(block: PrintBlock): void {
-    if (block.nestedBlock != null) { 
-      const value = this.generateBlockCode(block.nestedBlock) as string;
-      this.addLine(`System.out.println(${value});`);
-    } else {
-      const value = this.evaluateInput(block.inputs[0]);
-      this.addLine(`System.out.println("${value}");`);
-    }
+    const value = block.nestedBlock 
+      ? this.generateBlockCode(block.nestedBlock)
+      : this.evaluateInput(block.inputs[0]);
+    this.addLine(`System.out.println(${value});`);
   }
 
   private generateIfThenBlockCode(block: IfThenBlock): void {
@@ -138,23 +145,27 @@ class JavaBlockInterpreter {
       this.addLine(`if (${condition}) {`);
       this.indentationLevel += 2;
       for (const thenBlock of block.thenBlocks) {
-        this.generateBlockCode(thenBlock);
+        const result = this.generateBlockCode(thenBlock);
+        if (typeof result === 'string') {
+          this.addLine(result);
+        }
       }
       this.indentationLevel -= 2;
       this.addLine('}');
       
-      // Add else block
       if (block.elseBlocks && block.elseBlocks.length > 0) {
         this.addLine('else {');
         this.indentationLevel += 2;
         for (const elseBlock of block.elseBlocks) {
-          this.generateBlockCode(elseBlock);
+          const result = this.generateBlockCode(elseBlock);
+          if (typeof result === 'string') {
+            this.addLine(result);
+          }
         }
         this.indentationLevel -= 2;
         this.addLine('}');
       }
     } else {
-      // Handle the case where there's no condition
       console.warn('If-Then block has no condition');
     }
   }
@@ -166,18 +177,22 @@ class JavaBlockInterpreter {
   }
 
   private generateRepeatBlockCode(block: RepeatBlock): void {
-    this.addLine(`for (int i = 0; i < ${block.repeatCount}; i++) {`);
+    const count = this.evaluateInput(block.repeatCount);
+    this.addLine(`for (int i = 0; i < ${count}; i++) {`);
     this.indentationLevel += 2;
     for (const nestedBlock of block.nestedBlocks) {
-      this.generateBlockCode(nestedBlock);
+      const result = this.generateBlockCode(nestedBlock);
+      if (typeof result === 'string') {
+        this.addLine(result);
+      }
     }
     this.indentationLevel -= 2;
     this.addLine('}');
   }
 
   private generateMathOperatorBlockCode(block: MathOperatorBlock): string {
-    const left = block.leftBlock ? this.generateMathOperatorBlockCode(block.leftBlock as MathOperatorBlock) : block.leftInput;
-    const right = block.rightBlock ? this.generateMathOperatorBlockCode(block.rightBlock as MathOperatorBlock) : block.rightInput;
+    const left = block.leftBlock ? this.generateBlockCode(block.leftBlock) : this.evaluateInput(block.leftInput);
+    const right = block.rightBlock ? this.generateBlockCode(block.rightBlock) : this.evaluateInput(block.rightInput);
     return `(${left} ${block.operator} ${right})`;
   }
 
@@ -185,23 +200,20 @@ class JavaBlockInterpreter {
     return store.getters['variables/getVariableById'](block.variableId).name;
   }
 
-  private generateVariableChangeBlockCode(block: VariableChangeBlock) {
-    this.addLine(store.getters['variables/getVariableById'](block.variableId).name + ' = ' + block.value + ';');
+  private generateVariableChangeBlockCode(block: VariableChangeBlock): void {
+    const variableName = store.getters['variables/getVariableById'](block.variableId).name;
+    const value = this.evaluateInput(block.value);
+    this.addLine(`${variableName} = ${value};`);
   }
 
-  private generateConditionCode(block: Block | null): string {
-    if (!block) {
-      console.warn('Null block in condition');
-      return 'true'; // Default to true if the block is null
-    }
-
+  private generateConditionCode(block: Block): string {
     if (block.type === 'compareOperator') {
       return this.generateComparisonOperatorCode(block as ComparisonOperatorBlock);
     } else if (block.type === 'compareLogic') {
       return this.generateComparisonLogicCode(block as ComparisonLogicBlock);
     } else {
       console.warn(`Unexpected block type in condition: ${block.type}`);
-      return 'true'; // Default to true if the block type is unexpected
+      return 'true';
     }
   }
 
@@ -219,15 +231,26 @@ class JavaBlockInterpreter {
 
   private evaluateInput(input: any): any {
     if (typeof input === 'object' && input !== null) {
-      if (input.type === 'variable') {
-        return store.getters['variables/getVariableValue'](input.name);
-      } else if (input.type === 'mathOperator') {
-        return this.generateMathOperatorBlockCode(input as MathOperatorBlock);
-      } else if (input.default !== undefined) {
-        return input.default;
+      switch (input.type) {
+        case 'variable':
+          return store.getters['variables/getVariableById'](input.variableId).name;
+        case 'mathOperator':
+          return this.generateMathOperatorBlockCode(input as MathOperatorBlock);
+        case 'parameter':
+          return this.generateParameterCode(input as ParameterBlock);
+        case 'functionGetter':
+          return this.generateFunctionGetterBlockCode(input as FunctionGetterBlock);
+        case 'compareOperator':
+          return this.generateComparisonOperatorCode(input as ComparisonOperatorBlock);
+        case 'compareLogic':
+          return this.generateComparisonLogicCode(input as ComparisonLogicBlock);
+        default:
+          if (input.default !== undefined) {
+            return input.default;
+          }
       }
     }
-    return JSON.stringify(input);
+    return input;
   }
 
   private addLine(line: string): void {

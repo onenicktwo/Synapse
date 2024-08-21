@@ -108,7 +108,7 @@ export default defineComponent({
     const leftInput = ref(props.block.leftInput || '');
     const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable', 'mathOperator', 'print', 'ifThen', 'createVariable', 'repeat'];
+    const allowedInputBlocks = ['variable', 'mathOperator', 'print', 'ifThen', 'createVariable', 'repeat', 'functionGetter'];
 
     const blockStyle = computed(() => {
       return props.block && props.block.color
