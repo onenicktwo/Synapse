@@ -91,7 +91,7 @@ export interface FunctionBlock extends Block {
   functionName: string;
   nestedBlocks: Block[];
   parameters: ParameterBlock[]; 
-  returnBlock: Block | null; 
+  hasReturn: boolean;
 }
 
 export interface FunctionGetterBlock extends Block {
@@ -99,6 +99,7 @@ export interface FunctionGetterBlock extends Block {
   functionId: string;
   parameterValues: string[];
   nestedBlocks: (Block | null)[]; 
+  hasReturn: boolean;
 }
 
 export interface ReturnBlock extends Block {

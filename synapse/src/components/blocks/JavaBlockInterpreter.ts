@@ -78,7 +78,8 @@ class JavaBlockInterpreter {
 
   private generateReturnCode(block: ReturnBlock): string {
     if (block.valueBlock) {
-      return `return ${this.generateBlockCode(block.valueBlock)};`;
+      const value = this.generateBlockCode(block.valueBlock);
+      return `return ${value};`;
     }
     return 'return 0;';
   }
@@ -109,7 +110,7 @@ class JavaBlockInterpreter {
   private generateFunctionBlockCode(block: FunctionBlock): void {
     const parameterString = block.parameters.map((param: ParameterBlock) => `int ${param.name}`).join(', ');
   
-    const returnType = block.returnBlock ? 'int' : 'void';
+    const returnType = block.hasReturn ? 'int' : 'void';
   
     if (block.functionName === 'main') {
       this.addLine('public static void main(String[] args) {');
@@ -121,10 +122,13 @@ class JavaBlockInterpreter {
       this.generateBlockCode(nestedBlock);
     }
 
-    if (block.returnBlock) {
-      const returnValue = this.generateBlockCode(block.returnBlock);
-      this.addLine(`return ${returnValue};`);
-    } 
+    if (block.hasReturn) {
+      const returnBlock = block.nestedBlocks.find(b => b.type === 'return') as ReturnBlock | undefined;
+      if (returnBlock && returnBlock.valueBlock) {
+        const returnValue = this.generateBlockCode(returnBlock.valueBlock);
+        this.addLine(`return ${returnValue};`);
+      }
+    }
     this.addLine('}');
   }
 
@@ -141,7 +145,10 @@ class JavaBlockInterpreter {
       this.addLine(`if (${condition}) {`);
       this.indentationLevel += 2;
       for (const thenBlock of block.thenBlocks) {
-        this.generateBlockCode(thenBlock);
+        const result = this.generateBlockCode(thenBlock);
+        if (typeof result === 'string') {
+          this.addLine(result);
+        }
       }
       this.indentationLevel -= 2;
       this.addLine('}');
@@ -150,7 +157,10 @@ class JavaBlockInterpreter {
         this.addLine('else {');
         this.indentationLevel += 2;
         for (const elseBlock of block.elseBlocks) {
-          this.generateBlockCode(elseBlock);
+          const result = this.generateBlockCode(elseBlock);
+          if (typeof result === 'string') {
+            this.addLine(result);
+          }
         }
         this.indentationLevel -= 2;
         this.addLine('}');
@@ -167,18 +177,22 @@ class JavaBlockInterpreter {
   }
 
   private generateRepeatBlockCode(block: RepeatBlock): void {
-    this.addLine(`for (int i = 0; i < ${block.repeatCount}; i++) {`);
+    const count = this.evaluateInput(block.repeatCount);
+    this.addLine(`for (int i = 0; i < ${count}; i++) {`);
     this.indentationLevel += 2;
     for (const nestedBlock of block.nestedBlocks) {
-      this.generateBlockCode(nestedBlock);
+      const result = this.generateBlockCode(nestedBlock);
+      if (typeof result === 'string') {
+        this.addLine(result);
+      }
     }
     this.indentationLevel -= 2;
     this.addLine('}');
   }
 
   private generateMathOperatorBlockCode(block: MathOperatorBlock): string {
-    const left = block.leftBlock ? this.generateBlockCode(block.leftBlock) : block.leftInput;
-    const right = block.rightBlock ? this.generateBlockCode(block.rightBlock) : block.rightInput;
+    const left = block.leftBlock ? this.generateBlockCode(block.leftBlock) : this.evaluateInput(block.leftInput);
+    const right = block.rightBlock ? this.generateBlockCode(block.rightBlock) : this.evaluateInput(block.rightInput);
     return `(${left} ${block.operator} ${right})`;
   }
 
@@ -217,16 +231,23 @@ class JavaBlockInterpreter {
 
   private evaluateInput(input: any): any {
     if (typeof input === 'object' && input !== null) {
-      if (input.type === 'variable') {
-        return store.getters['variables/getVariableById'](input.variableId).name;
-      } else if (input.type === 'mathOperator') {
-        return this.generateMathOperatorBlockCode(input as MathOperatorBlock);
-      } else if (input.type === 'parameter') {
-        return this.generateParameterCode(input as ParameterBlock);
-      } else if (input.type === 'functionGetter') {
-        return this.generateFunctionGetterBlockCode(input as FunctionGetterBlock);
-      } else if (input.default !== undefined) {
-        return input.default;
+      switch (input.type) {
+        case 'variable':
+          return store.getters['variables/getVariableById'](input.variableId).name;
+        case 'mathOperator':
+          return this.generateMathOperatorBlockCode(input as MathOperatorBlock);
+        case 'parameter':
+          return this.generateParameterCode(input as ParameterBlock);
+        case 'functionGetter':
+          return this.generateFunctionGetterBlockCode(input as FunctionGetterBlock);
+        case 'compareOperator':
+          return this.generateComparisonOperatorCode(input as ComparisonOperatorBlock);
+        case 'compareLogic':
+          return this.generateComparisonLogicCode(input as ComparisonLogicBlock);
+        default:
+          if (input.default !== undefined) {
+            return input.default;
+          }
       }
     }
     return input;

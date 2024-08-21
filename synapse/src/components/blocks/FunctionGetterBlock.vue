@@ -42,11 +42,8 @@
           </div>
         </div>
       </div>
-      <div class="return-value" v-if="selectedFunction.returnBlock">
-        <label>Return Value:</label>
-        <div class="input-container">
-          {{ selectedFunction.returnBlock.label }}
-        </div>
+      <div class="return-value" v-if="selectedFunction.hasReturn">
+        <label>Returns a value</label>
       </div>
     </div>
 
@@ -95,7 +92,6 @@ export default defineComponent({
       return undefined;
     });
 
-
     watch(selectedFunction, (newFunction) => {
       if (newFunction) {
         parameterValues.value = newFunction.parameters.map(() => '');
@@ -117,7 +113,7 @@ export default defineComponent({
           functionId: selectedFunction.value.id,
           parameterValues: validParameterValues,
           nestedBlocks: nestedBlocks.value,
-          returnBlock: selectedFunction.value.returnBlock,
+          hasReturn: selectedFunction.value.hasReturn,
         });
       }
     };
@@ -143,7 +139,7 @@ export default defineComponent({
       event.stopPropagation();
       if (event.dataTransfer) {
         const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-        if (['variable', 'parameter'].includes(blockData.type)) {
+        if (['variable', 'parameter', 'mathOperator', 'functionGetter'].includes(blockData.type)) {
           const newBlock: Block = {
             ...blockData,
             id: Date.now().toString()
@@ -180,15 +176,16 @@ export default defineComponent({
 });
 </script>
 
-
 <style scoped>
 .return-value {
   margin-top: 10px;
+  padding: 5px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
 .return-value label {
-  display: block;
-  margin-bottom: 5px;
+  font-weight: bold;
 }
 
 .return-value .input-container {

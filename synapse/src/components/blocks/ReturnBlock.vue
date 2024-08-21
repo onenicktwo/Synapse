@@ -63,7 +63,7 @@
     const onValueDrop = (event: DragEvent) => {
       event.preventDefault();
       const blockData = JSON.parse(event.dataTransfer?.getData('text/plain') || '{}');
-      if (['variable', 'mathOperator', 'functionGetter'].includes(blockData.type)) {
+      if (['variable', 'parameter', 'functionGetter'].includes(blockData.type)) {
         valueBlock.value = blockData;
         updateBlock();
       }
