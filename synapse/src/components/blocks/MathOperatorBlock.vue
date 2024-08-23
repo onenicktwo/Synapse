@@ -7,12 +7,12 @@
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <div class="block-title">Math Operator</div>
+    <div class="block-title" v-if="!isNested">Math Operator</div>
     <div v-if="!isInWorkspace" class="toolbox-preview">
       A ⊕ B
     </div>
     <div v-else class="block-content">
-      <div class="input-container left" :class="{ 'has-block': leftBlock }">
+      <div class="input-container left" :class="{ 'has-block': leftBlock, 'disabled': isNested }">
         <component
           v-if="leftBlock"
           :key="leftBlock.id"
@@ -30,6 +30,8 @@
             v-model="leftInput" 
             placeholder="Left input"
             @input="updateBlock"
+            :disabled="isNested"
+            :class="{ 'nested-input': isNested }"
           >
         </div>
       </div>
@@ -60,7 +62,7 @@
         </div>
       </div>
     </div>
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    <button v-if="isInWorkspace && !isNested" @click="$emit('remove')" class="remove-btn">X</button>
   </div>
 </template>
 
@@ -108,10 +110,10 @@ export default defineComponent({
     const leftInput = ref(props.block.leftInput || '');
     const rightInput = ref(props.block.rightInput || '');
 
-    const allowedInputBlocks = ['variable', 'mathOperator', 'print', 'ifThen', 'createVariable', 'repeat', 'functionGetter'];
+    const allowedInputBlocks = ['variable', 'mathOperator', 'print', 'ifThen', 'createVariable', 'repeat'];
 
     const blockStyle = computed(() => {
-      return props.block && props.block.color
+      return props.block && props.block.color && !props.isNested
         ? { backgroundColor: props.block.color }
         : {};
     });
@@ -211,64 +213,28 @@ export default defineComponent({
 });
 </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <style scoped>
 .math-operator-block {
-padding: 10px;
-border-radius: 5px;
-cursor: move;
-position: relative;
-margin-bottom: 10px;
-display: flex;
-flex-direction: column;
-box-sizing: border-box;
-background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: move;
+  position: relative;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-color: #f8f9fa;
 }
 
 .block-title {
-font-weight: bold;
-margin-bottom: 10px;
-color: #333;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
 }
 
 .math-operator-block.in-toolbox {
-width: 180px;
-font-size: 0.8em;
+  width: 180px;
+  font-size: 0.8em;
 }
 
 .math-operator-block.in-workspace {
@@ -331,8 +297,19 @@ font-size: 0.8em;
   align-items: center;
 }
 
+.block-input input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
 .operator-select {
   margin: 0 10px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background-color: white;
 }
 
 .remove-btn {
@@ -346,6 +323,12 @@ font-size: 0.8em;
   color: #ff0000;
 }
 
+.nested-input {
+  background-color: #f0f0f0;
+  color: #888;
+  cursor: not-allowed;
+}
+
 /* Adjustments for toolbox */
 .in-toolbox .block-title {
   font-size: 0.9em;
@@ -355,28 +338,5 @@ font-size: 0.8em;
 .in-toolbox .toolbox-preview {
   font-size: 1em;
   padding: 3px;
-}
-
-.in-toolbox .input-container,
-.in-toolbox .operator-select {
-  display: none;
-}
-
-.in-workspace .toolbox-preview {
-  display: none;
-}
-
-.in-workspace .input-container {
-  min-height: 30px;
-  padding: 5px;
-}
-
-.in-workspace .operator-select {
-  display: block;
-  margin: 0 10px;
-}
-
-.in-workspace input {
-  font-size: 1em;
 }
 </style>

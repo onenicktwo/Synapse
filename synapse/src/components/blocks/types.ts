@@ -74,11 +74,14 @@ export interface VariableBlock extends Block {
   variableId: string;
 }
 
-export interface VariableChangeBlock extends Block {
-  type: 'variable';
-  variableId: string;
-  value: number;
+export interface VariableChangeBlock {
+  id: string;
+  type: 'variableChange';
+  variableId: string | null;
+  mathOperator: MathOperatorBlock | null;
+  parentFunctionId?: string; // Add this line
 }
+
 
 export interface ParameterBlock extends Block {
   type: 'parameter';
