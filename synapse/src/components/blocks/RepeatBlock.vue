@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType, ref, onMounted } from 'vue';
+import { defineComponent, PropType, ref, onMounted, onBeforeUnmount } from 'vue';
 import { Block, blockComponents, RepeatBlock as RepeatBlockType } from './types';
 import { getBlockComponent } from '../blockUtils';
 
@@ -84,16 +84,25 @@ export default defineComponent({
     const repeatCount = ref(props.block.repeatCount || 1);
     const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
     const nestedBlocksContainer = ref<HTMLElement | null>(null);
+    const resizeObserver = ref<ResizeObserver | null>(null);
 
-    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'functionGetter'];
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'functionGetter', 'variableChange']; 
 
     onMounted(() => {
       if (nestedBlocksContainer.value) {
-        const resizeObserver = new ResizeObserver(() => {
-          nestedBlocksContainer.value!.style.height = 'auto';
+        resizeObserver.value = new ResizeObserver(() => {
+          if (nestedBlocksContainer.value) {
+            nestedBlocksContainer.value.style.height = 'auto';
+          }
         });
 
-        resizeObserver.observe(nestedBlocksContainer.value);
+        resizeObserver.value.observe(nestedBlocksContainer.value);
+      }
+    });
+
+    onBeforeUnmount(() => {
+      if (resizeObserver.value) {
+        resizeObserver.value.disconnect();
       }
     });
 
@@ -184,7 +193,6 @@ export default defineComponent({
   }
 });
 </script>
-
 <style scoped>
 .repeat-block {
   display: inline-block;

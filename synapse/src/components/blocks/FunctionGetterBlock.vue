@@ -1,55 +1,61 @@
 <template>
   <div 
     class="function-getter-block"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
     :style="{ backgroundColor: block.color }"
     draggable="true"
     @dragstart="onDragStart"
   >
-    <div class="function-title">Function Call</div>
-    <select v-model="selectedFunctionId" @change="updateFunction">
-      <option value="">Select a function</option>
-      <option v-for="func in functions" :key="func.id" :value="func.id">
-        {{ func.name }}
-      </option>
-    </select>
+    <div v-if="!isInWorkspace" class="toolbox-preview">
+      Function Call
+    </div>
+    <template v-else>
+      <div class="function-title">Function Call</div>
+      <select v-model="selectedFunctionId" @change="updateFunction">
+        <option value="">Select a function</option>
+        <option v-for="func in functions" :key="func.id" :value="func.id">
+          {{ func.name }}
+        </option>
+      </select>
 
-    <div v-if="selectedFunction"> 
-      <div
-        v-for="(param, index) in selectedFunction.parameters"
-        :key="index"
-        class="parameter-input"
-      >
-        <label>{{ param.name }}:</label>
-        <div class="input-container" :class="{ 'has-block': nestedBlocks[index] }">
-          <component
-            v-if="nestedBlocks[index]"
-            :key="nestedBlocks[index].id"
-            :is="components[getBlockComponent(nestedBlocks[index].type)]"
-            :block="nestedBlocks[index]"
-            :isInWorkspace="true"
-            @remove="() => removeNestedBlock(index)"
-            @update="(updatedBlock: Block) => updateNestedBlock(index, updatedBlock)"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, index)"
-          />
-          <div v-else class="block-input" @drop.stop="(event) => handleInputDrop(event, index)" @dragover.prevent>
-            <input
-              type="text"
-              v-model="parameterValues[index]"
-              @input="updateFunction"
-              :placeholder="param.name"
-            >
+      <div v-if="selectedFunction"> 
+        <div
+          v-for="(param, index) in selectedFunction.parameters"
+          :key="index"
+          class="parameter-input"
+        >
+          <label>{{ param.name }}:</label>
+          <div class="input-container" :class="{ 'has-block': nestedBlocks[index] }">
+            <component
+              v-if="nestedBlocks[index]"
+              :key="nestedBlocks[index].id"
+              :is="components[getBlockComponent(nestedBlocks[index].type)]"
+              :block="nestedBlocks[index]"
+              :isInWorkspace="true"
+              @remove="() => removeNestedBlock(index)"
+              @update="(updatedBlock: Block) => updateNestedBlock(index, updatedBlock)"
+              draggable="true"
+              @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, index)"
+            />
+            <div v-else class="block-input" @drop.stop="(event) => handleInputDrop(event, index)" @dragover.prevent>
+              <input
+                type="text"
+                v-model="parameterValues[index]"
+                @input="updateFunction"
+                :placeholder="param.name"
+              >
+            </div>
           </div>
         </div>
+        <div class="return-value" v-if="selectedFunction.hasReturn">
+          <label>Returns a value</label>
+        </div>
       </div>
-      <div class="return-value" v-if="selectedFunction.hasReturn">
-        <label>Returns a value</label>
-      </div>
-    </div>
 
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
-      X
-    </button>
+      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">
+        X
+      </button>
+    </template>
   </div>
 </template>
 
@@ -121,6 +127,7 @@ export default defineComponent({
     const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
         event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+        event.dataTransfer.effectAllowed = 'copy';
       }
     };
 
@@ -151,17 +158,18 @@ export default defineComponent({
     };
 
     const handleInputDragStart = (event: DragEvent, index: number) => {
-      if (nestedBlocks.value[index]) {
-        event.dataTransfer?.setData('text/plain', JSON.stringify(nestedBlocks.value[index]));
-        event.dataTransfer!.effectAllowed = 'copy';
+      event.stopPropagation();
+      if (event.dataTransfer && nestedBlocks.value[index]) {
+        event.dataTransfer.setData('text/plain', JSON.stringify(nestedBlocks.value[index]));
+        event.dataTransfer.effectAllowed = 'copy';
       }
     };
 
     return {
       selectedFunctionId,
       functions,
-      parameterValues,
       selectedFunction,
+      parameterValues,
       nestedBlocks,
       components,
       getBlockComponent,
@@ -172,54 +180,69 @@ export default defineComponent({
       handleInputDrop,
       handleInputDragStart,
     };
-  },
+  }
 });
 </script>
 
 <style scoped>
-.return-value {
-  margin-top: 10px;
-  padding: 5px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-}
-
-.return-value label {
-  font-weight: bold;
-}
-
-.return-value .input-container {
-  background-color: rgba(255, 255, 255, 0.2);
-  padding: 5px;
-  border-radius: 3px;
-}
-
 .function-getter-block {
-  width: 100%;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 10px;
-  border-radius: 5px;
+  display: inline-block;
   cursor: move;
   position: relative;
   margin-bottom: 10px;
 }
 
+.in-toolbox,
+.in-workspace {
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #fff;
+}
+
+.toolbox-preview {
+  font-weight: bold;
+}
+
 .function-title {
   font-weight: bold;
+  margin-bottom: 5px;
+}
+
+select {
+  width: 100%;
   margin-bottom: 10px;
 }
 
-.function-getter-block select {
-  margin: 5px 0;
-  padding: 5px;
-  border: none;
+.parameter-input {
+  margin-bottom: 5px;
+}
+.input-container {
+  display: flex;
+  align-items: center;
+}
+
+.block-input {
+  flex-grow: 1;
+  padding: 2px;
+  border: 1px dashed #fff;
   border-radius: 3px;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: black;
+  min-height: 30px;
+}
+
+.block-input input {
   width: 100%;
+  background: transparent;
+  border: none;
+  color: #fff;
+}
+
+.has-block {
+  border: none;
+}
+
+.return-value {
+  margin-top: 5px;
+  font-style: italic;
 }
 
 .remove-btn {
@@ -231,49 +254,5 @@ export default defineComponent({
   cursor: pointer;
   font-weight: bold;
   color: #ff0000;
-}
-
-:deep(.input-container) .function-getter-block {
-  width: 100%;
-  max-width: none;
-}
-
-:deep(.input-container) .function-getter-block select {
-  width: 100%;
-}
-
-.input-container {
-  min-height: 30px;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
-  border-radius: 5px;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.input-container.has-block {
-  width: 100%;
-  border: none;
-}
-
-.block-input {
-  width: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.block-input input {
-  width: 100%;
-  padding: 5px;
-  border: none;
-  border-radius: 3px;
-  background-color: transparent;
-  color: white;
-}
-
-.block-input input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
 }
 </style>

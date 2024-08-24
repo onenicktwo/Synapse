@@ -1,6 +1,9 @@
 <template>
   <base-block :block="block" :isInWorkspace="isInWorkspace" @remove="removeVariableAndEmit">
-    <template #text-input>
+    <template #preview v-if="!isInWorkspace">
+      <div class="toolbox-preview">Create Variable</div>
+    </template>
+    <template #content v-else>
       <div class="block-input">
         <input 
           type="text" 
@@ -20,8 +23,8 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType} from 'vue';
-import { mapActions, mapGetters } from 'vuex';
+import { defineComponent, PropType, ref, watch, onMounted } from 'vue';
+import { useStore } from 'vuex';
 import BaseBlock from './PrintBlockTemplate.vue';
 import { CreateVariableBlock as CreateVariableBlockType } from './types';
 
@@ -41,98 +44,96 @@ export default defineComponent({
     }
   },
   emits: ['remove', 'update'],
-  data() {
-    return {
-      variableName: this.block.inputs[0].default || '',
-      variableValue: parseFloat(this.block.inputs[1].default) || 0,
-      previousVariableName: '',
-    };
-  },
-  computed: {
-    ...mapGetters('variables', ['getVariableByName', 'getAllVariables'])
-  },
-  methods: {
-    ...mapActions('variables', ['addVariable', 'removeVariable', 'updateVariable']),
-    updateBlock() {
-      this.$emit('update', {
-        ...this.block,
+  setup(props, { emit }) {
+    const store = useStore();
+    const variableName = ref(props.block.inputs[0].default || '');
+    const variableValue = ref(parseFloat(props.block.inputs[1].default) || 0);
+    const previousVariableName = ref('');
+
+    const updateBlock = () => {
+      emit('update', {
+        ...props.block,
         inputs: [
           {
-            ...this.block.inputs[0],
-            default: this.variableName
+            ...props.block.inputs[0],
+            default: variableName.value
           },
           {
-            ...this.block.inputs[1],
-            default: this.variableValue.toString()
+            ...props.block.inputs[1],
+            default: variableValue.value.toString()
           }
         ]
       });
 
-      this.updateOrCreateVariable();
-    },
-    updateOrCreateVariable() {
-      if (this.variableName && this.variableName !== this.previousVariableName) {
+      updateOrCreateVariable();
+    };
+
+    const updateOrCreateVariable = () => {
+      if (variableName.value && variableName.value !== previousVariableName.value) {
         // Remove the previous variable if it exists
-        const previousVariable = this.getVariableByName(this.previousVariableName);
+        const previousVariable = store.getters['variables/getVariableByName'](previousVariableName.value);
         if (previousVariable) {
-          this.removeVariable(previousVariable.id);
+          store.dispatch('variables/removeVariable', previousVariable.id);
         }
 
         // Add or update the new variable
-        const existingVariable = this.getVariableByName(this.variableName);
+        const existingVariable = store.getters['variables/getVariableByName'](variableName.value);
         if (existingVariable) {
-          this.updateVariable({
+          store.dispatch('variables/updateVariable', {
             ...existingVariable,
-            value: this.variableValue
+            value: variableValue.value
           });
         } else {
-          this.addVariable({
-            name: this.variableName,
-            value: this.variableValue
+          store.dispatch('variables/addVariable', {
+            name: variableName.value,
+            value: variableValue.value
           });
         }
 
-        this.previousVariableName = this.variableName;
-      } else if (this.variableName) {
+        previousVariableName.value = variableName.value;
+      } else if (variableName.value) {
         // Just update the value if the name hasn't changed
-        const existingVariable = this.getVariableByName(this.variableName);
+        const existingVariable = store.getters['variables/getVariableByName'](variableName.value);
         if (existingVariable) {
-          this.updateVariable({
+          store.dispatch('variables/updateVariable', {
             ...existingVariable,
-            value: this.variableValue
+            value: variableValue.value
           });
         }
       }
-    },
-    removeVariableAndEmit() {
-      const existingVariable = this.getVariableByName(this.variableName);
+    };
+
+    const removeVariableAndEmit = () => {
+      const existingVariable = store.getters['variables/getVariableByName'](variableName.value);
       if (existingVariable) {
-        this.removeVariable(existingVariable.id);
+        store.dispatch('variables/removeVariable', existingVariable.id);
       }
-      this.$emit('remove');
-    }
-  },
-  mounted() {
-    if (this.isInWorkspace && this.variableName) {
-      this.updateOrCreateVariable();
-    }
-  },
-  watch: {
-    variableName: {
-      handler(newName, oldName) {
-        if (newName !== oldName) {
-          this.updateOrCreateVariable();
-        }
-      },
-      immediate: true
-    },
-    variableValue: {
-      handler() {
-        this.updateOrCreateVariable();
-      },
-      immediate: true
-    }
-  },
+      emit('remove');
+    };
+
+    onMounted(() => {
+      if (props.isInWorkspace && variableName.value) {
+        updateOrCreateVariable();
+      }
+    });
+
+    watch(variableName, (newName, oldName) => {
+      if (newName !== oldName) {
+        updateOrCreateVariable();
+      }
+    });
+
+    watch(variableValue, () => {
+      updateOrCreateVariable();
+    });
+
+    return {
+      variableName,
+      variableValue,
+      updateBlock,
+      removeVariableAndEmit
+    };
+  }
 });
 </script>
 
@@ -141,11 +142,23 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
 }
+
 .block-input input {
   width: 100%;
   padding: 5px;
   margin-bottom: 5px;
   border: none;
   border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.block-input input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.toolbox-preview {
+  font-weight: bold;
+  color: white;
 }
 </style>

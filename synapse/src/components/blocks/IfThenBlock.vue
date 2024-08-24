@@ -6,10 +6,7 @@
     @dragstart="handleDragStart"
   >
     <div class="block-title">If-Then-Else</div>
-    <div v-if="!isInWorkspace" class="toolbox-preview">
-      If (condition) Then ... Else ...
-    </div>
-    <template v-else>
+    <template v-if="isInWorkspace">
       <div class="area-container">
         <div class="condition-area">
           <component
@@ -317,22 +314,8 @@ export default defineComponent({
 /* Adjustments for toolbox */
 .in-toolbox .condition-area,
 .in-toolbox .then-area,
-.in-toolbox .else-area {
-  display: none;
-}
-
-.in-toolbox .block-title {
-  font-size: 0.9em;
-  margin-bottom: 5px;
-}
-
-.in-toolbox .toolbox-preview {
-  font-size: 1em;
-  padding: 3px;
-  text-align: center;
-}
-
-.in-workspace .toolbox-preview {
+.in-toolbox .else-area,
+.in-toolbox .area-container {
   display: none;
 }
 </style>
