@@ -1,18 +1,23 @@
 <template>
   <div 
     class="variable-block"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
     draggable="true"
-    @dragstart="onDragStart"
-    @dragend="onDragEnd"
+    @dragstart="handleDragStart"
   >
-    <div class="variable-title">Variable</div>
-    <select v-model="selectedVariableId" @change="updateVariable">
-      <option value="">Select a variable</option>
-      <option v-for="variable in variables" :key="variable.id" :value="variable.id">
-        {{ variable.name }}
-      </option>
-    </select>
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    <div v-if="!isInWorkspace" class="toolbox-preview">
+      Use Variable
+    </div>
+    <div v-else class="block-container">
+      <div class="variable-title">Variable</div>
+      <select v-model="selectedVariableId" @change="updateVariable">
+        <option value="">Select a variable</option>
+        <option v-for="variable in variables" :key="variable.id" :value="variable.id">
+          {{ variable.name }}
+        </option>
+      </select>
+      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    </div>
   </div>
 </template>
 
@@ -32,10 +37,6 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    isNested: {
-      type: Boolean,
-      default: false
-    },
   },
   emits: ['remove', 'update'],
   setup(props, { emit }) {
@@ -43,11 +44,6 @@ export default defineComponent({
     const selectedVariableId = ref(props.block.variableId || '');
 
     const variables = computed(() => store.getters['variables/getAllVariables']);
-
-    const selectedVariableValue = computed(() => {
-      const variable = store.getters['variables/getVariableById'](selectedVariableId.value);
-      return variable ? variable.value : null;
-    });
 
     const updateBlock = () => {
       const updatedBlock: VariableBlockType = {
@@ -61,24 +57,20 @@ export default defineComponent({
       updateBlock();
     };
 
-    const onDragStart = (event: DragEvent) => {
-      if (event.dataTransfer) {
-        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-        event.dataTransfer.effectAllowed = 'copy';
+    const handleDragStart = (event: DragEvent) => {
+      if (!props.isInWorkspace) {
+        if (event.dataTransfer) {
+          event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+          event.dataTransfer.effectAllowed = 'copy';
+        }
       }
-    };
-
-    const onDragEnd = (event: DragEvent) => {
-      console.log('Drag ended at:', event.clientX, event.clientY);
     };
 
     return {
       selectedVariableId,
       variables,
-      selectedVariableValue,
       updateVariable,
-      onDragStart,
-      onDragEnd,
+      handleDragStart
     };
   },
 });
@@ -86,6 +78,14 @@ export default defineComponent({
 
 <style scoped>
 .variable-block {
+  display: inline-block;
+  cursor: move;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.in-toolbox, 
+.block-container {
   width: 100%;
   max-width: 200px;
   display: flex;
@@ -94,9 +94,10 @@ export default defineComponent({
   background-color: #ff8c1a;
   padding: 10px;
   border-radius: 5px;
-  cursor: move;
-  position: relative;
-  margin-bottom: 10px;
+}
+
+.toolbox-preview {
+  font-weight: bold;
 }
 
 .variable-title {
@@ -104,8 +105,7 @@ export default defineComponent({
   margin-bottom: 10px;
 }
 
-.variable-block select,
-.variable-block input {
+.variable-block select {
   margin: 5px 0;
   padding: 5px;
   border: none;
@@ -124,15 +124,5 @@ export default defineComponent({
   cursor: pointer;
   font-weight: bold;
   color: #ff0000;
-}
-
-:deep(.input-container) .variable-block {
-  width: 100%;
-  max-width: none;
-}
-
-:deep(.input-container) .variable-block select,
-:deep(.input-container) .variable-block input {
-  width: 100%;
 }
 </style>

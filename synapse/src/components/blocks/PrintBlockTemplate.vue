@@ -1,18 +1,20 @@
-
 <template>
   <div 
-    class="block print-block"
+    class="block base-block"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
     :style="{ backgroundColor: block.color }"
     draggable="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <div class="block-label">{{ block.label }}</div>
-    <div class="block-content">
-      <slot name="text-input"></slot>
-      <slot name="block-input"></slot>
-    </div>
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    <slot name="preview" v-if="!isInWorkspace"></slot>
+    <template v-else>
+      <div class="block-label">{{ block.label }}</div>
+      <div class="block-content">
+        <slot name="content"></slot>
+      </div>
+      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    </template>
   </div>
 </template>
 
@@ -21,7 +23,7 @@ import { defineComponent, PropType } from 'vue';
 import { Block } from './types';
 
 export default defineComponent({
-  name: 'PrintBlockTemplate',
+  name: 'BaseBlock',
   props: {
     block: {
       type: Object as PropType<Block>,
@@ -48,13 +50,25 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.print-block {
+.base-block {
   width: 200px;
   padding: 10px;
   border-radius: 5px;
   cursor: move;
   position: relative;
   margin-bottom: 10px;
+}
+
+.in-toolbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+}
+
+.in-workspace {
+  display: flex;
+  flex-direction: column;
 }
 
 .block-label {
@@ -66,6 +80,7 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
 }
+
 .remove-btn {
   position: absolute;
   top: 5px;
@@ -77,4 +92,3 @@ export default defineComponent({
   color: #ff0000;
 }
 </style>
-

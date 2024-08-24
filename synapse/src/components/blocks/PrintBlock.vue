@@ -4,7 +4,10 @@
     :isInWorkspace="isInWorkspace" 
     @remove="$emit('remove')"
   >
-    <template #text-input>
+    <template #preview v-if="!isInWorkspace">
+      <div class="toolbox-preview">Print</div>
+    </template>
+    <template #content v-else>
       <div class="block-input-container">
         <div class="input-container" :class="{ 'has-block': nestedBlock }">
           <component
@@ -64,7 +67,7 @@ export default defineComponent({
     const inputValue = ref(props.block.inputs[0].default || '');
     const nestedBlock = ref<Block | null>(props.block.nestedBlock || null);
 
-const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
+    const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
 
     const updateBlock = () => {
       const updatedBlock: PrintBlockType = {
@@ -129,21 +132,19 @@ const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
 </script>
 
 <style scoped>
-/* Container for the PrintBlock component */
 .print-block-container {
   display: flex;
-  flex-direction: column; /* Stacks children vertically */
-  width: 100%; /* Ensures it takes full width */
-  box-sizing: border-box; /* Includes padding and border in element's total width and height */
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Styling for the input container within the PrintBlock */
 .block-input-container,
 .input-container {
   display: flex;
-  flex-direction: column; /* Allows vertical stacking */
-  align-items: stretch; /* Stretches items to fill container width */
-  width: 100%; /* Ensures it takes full width */
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
 }
 
 .input-container {
@@ -152,23 +153,23 @@ const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
   border-radius: 5px;
   padding: 5px;
   display: flex;
-  flex-direction: column; /* Allows vertical stacking */
-  align-items: stretch; /* Ensures content fills container width */
-  overflow: auto; /* Allows scrolling if content overflows */
+  flex-direction: column;
+  align-items: stretch;
+  overflow: auto;
   background-color: rgba(255, 255, 255, 0.1); 
 }
 
 .input-container.has-block {
   width: 100%;
   border: none; 
-  overflow: visible; /* Ensures nested block is fully visible */
+  overflow: visible;
 }
 
 .block-input {
   width: 100%;
   display: flex;
-  flex-direction: column; /* Stacks input and nested block vertically */
-  align-items: stretch; /* Ensures children stretch to fit container */
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .block-input input {
@@ -184,12 +185,15 @@ const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
   color: rgba(255, 255, 255, 0.7); 
 }
 
-/* Styling for nested blocks */
 .math-block, .print-block {
-  flex-shrink: 0; /* Prevents block from shrinking */
+  flex-shrink: 0;
   box-sizing: border-box;
-  overflow: visible; /* Ensures block is not clipped */
-  width: 100%; /* Ensures it stretches to fill parent width */
+  overflow: visible;
+  width: 100%;
 }
 
+.toolbox-preview {
+  font-weight: bold;
+  color: white;
+}
 </style>

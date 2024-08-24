@@ -1,32 +1,44 @@
 <template>
   <div 
-    class="variable-block"
+    class="variable-change-block"
+    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
     draggable="true"
-    @dragstart="onDragStart"
-    @dragend="onDragEnd"
+    @dragstart="handleDragStart"
   >
-    <div class="variable-title">Variable Change</div>
-    <select v-model="selectedVariableId" @change="updateVariable">
-      <option value="">Select a variable</option>
-      <option v-for="variable in availableVariables" :key="variable.id" :value="variable.id">
-        {{ variable.name }}: {{ variable.value }}
-      </option>
-    </select>
-    <div class="math-operator-container" @drop.stop="handleMathOperatorDrop" @dragover.prevent>
-      <component
-        v-if="mathOperator"
-        :is="components.MathOperatorBlock"
-        :block="mathOperator"
-        :isInWorkspace="true"
-        :isNested="true"
-        @remove="removeMathOperator"
-        @update="updateMathOperator"
-      />
-      <div v-else class="math-operator-placeholder">
-        Drop Math Operator here
-      </div>
+    <!-- Toolbox preview -->
+    <div v-if="!isInWorkspace" class="toolbox-preview">
+      Change Variable...
     </div>
-    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    
+    <!-- Workspace block -->
+    <div v-else class="block-container">
+      <div class="variable-title">Variable Change</div>
+      <select v-model="selectedVariableId" @change="updateVariable">
+        <option value="">Select a variable</option>
+        <option v-for="variable in availableVariables" :key="variable.id" :value="variable.id">
+          {{ variable.name }}: {{ variable.value }}
+        </option>
+      </select>
+      
+      <!-- Math Operator Container -->
+      <div class="math-operator-container" @drop.stop="handleMathOperatorDrop" @dragover.prevent>
+        <component
+          v-if="mathOperator"
+          :is="components.MathOperatorBlock"
+          :block="mathOperator"
+          :isInWorkspace="true"
+          :isNested="true"
+          @remove="removeMathOperator"
+          @update="updateMathOperator"
+        />
+        <div v-else class="math-operator-placeholder">
+          Drop Math Operator here
+        </div>
+      </div>
+      
+      <!-- Remove button -->
+      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+    </div>
   </div>
 </template>
 
@@ -105,15 +117,13 @@ export default defineComponent({
       updateBlock();
     };
 
-    const onDragStart = (event: DragEvent) => {
-      if (event.dataTransfer) {
-        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-        event.dataTransfer.effectAllowed = 'copy';
+    const handleDragStart = (event: DragEvent) => {
+      if (!props.isInWorkspace) { // Only allow dragging from toolbox
+        if (event.dataTransfer) {
+          event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+          event.dataTransfer.effectAllowed = 'copy';
+        }
       }
-    };
-
-    const onDragEnd = (event: DragEvent) => {
-      console.log('Drag ended at:', event.clientX, event.clientY);
     };
 
     return {
@@ -125,55 +135,54 @@ export default defineComponent({
       handleMathOperatorDrop,
       removeMathOperator,
       updateMathOperator,
-      onDragStart,
-      onDragEnd,
+      handleDragStart,
     };
-  },
+  }
 });
 </script>
 
 <style scoped>
-.variable-block {
-  width: 250px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  background-color: #ff8c1a;
-  padding: 10px;
-  border-radius: 5px;
+.variable-change-block {
+  display: inline-block;
   cursor: move;
   position: relative;
   margin-bottom: 10px;
 }
 
-.variable-title {
-  font-weight: bold;
-  margin-bottom: 10px;
+.in-toolbox,
+.block-container {
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: lightblue;
+  color: #333;
 }
 
-.variable-block select {
-  margin: 5px 0;
-  padding: 5px;
-  border: none;
-  border-radius: 3px;
-  background-color: #ffab5e;
-  color: white;
-  width: 100%;
+.toolbox-preview {
+  font-weight: bold;
+}
+
+.variable-title {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .math-operator-container {
-  width: 100%;
-  min-height: 50px;
-  border: 2px dashed rgba(255, 255, 255, 0.5);
-  border-radius: 5px;
-  margin-top: 10px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  padding: 5px;
+  border: 2px dashed rgba(0, 0, 0, 0.5);
+  border-radius: 5px;
+  margin-top: 5px;
 }
 
 .math-operator-placeholder {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.7);
+  font-style: italic;
+  text-align: center;
+  padding: 5px;
+  border: 1px dashed rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+  cursor: pointer;
 }
 
 .remove-btn {
