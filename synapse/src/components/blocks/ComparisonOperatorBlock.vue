@@ -1,63 +1,71 @@
 <template>
-    <div
-      class="block comparison-operator-block"
-      :style="{ backgroundColor: block.color }"
-      draggable="true"
-      @dragstart="onDragStart"
-      @dragend="onDragEnd"
-    >
-      <div class="block-content">
-        <div class="input-container left" :class="{ 'has-block': leftBlock }">
-          <component
-            v-if="leftBlock"
-            :key="leftBlock.id"
-            :is="components[getBlockComponent(leftBlock.type)]"
-            :block="leftBlock"
-            :isInWorkspace="true"
-            @remove="removeLeftBlock"
-            @update="updateLeftBlock"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
-          />
-          <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
-            <input 
-              type="text" 
-              v-model="leftInput" 
-              placeholder="Left input"
-              @input="updateBlock"
-            >
-          </div>
-        </div>
-        
-        <select v-model="selectedOperator" @change="updateBlock">
-          <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
-        </select>
-        
-        <div class="input-container right" :class="{ 'has-block': rightBlock }">
-          <component
-            v-if="rightBlock"
-            :key="rightBlock.id"
-            :is="components[getBlockComponent(rightBlock.type)]"
-            :block="rightBlock"
-            :isInWorkspace="true"
-            @remove="removeRightBlock"
-            @update="updateRightBlock"
-            draggable="true"
-            @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
-          />
-          <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
-            <input 
-              type="text" 
-              v-model="rightInput" 
-              placeholder="Right input"
-              @input="updateBlock"
-            >
-          </div>
+  <div
+    class="block comparison-operator-block"
+    :class="{ 'toolbox-preview': !isInWorkspace }"
+    :style="{ backgroundColor: block.color }"
+    draggable="true"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
+  >
+    <div v-if="isInWorkspace" class="block-content">
+      <!-- Full block content for workspace -->
+      <div class="input-container left" :class="{ 'has-block': leftBlock }">
+        <component
+          v-if="leftBlock"
+          :key="leftBlock.id"
+          :is="components[getBlockComponent(leftBlock.type)]"
+          :block="leftBlock"
+          :isInWorkspace="true"
+          @remove="removeLeftBlock"
+          @update="updateLeftBlock"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'left')"
+        />
+        <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'left')" @dragover.prevent>
+          <input 
+            type="text" 
+            v-model="leftInput" 
+            placeholder="Left input"
+            @input="updateBlock"
+          >
         </div>
       </div>
-      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+      
+      <select v-model="selectedOperator" @change="updateBlock">
+        <option v-for="op in operators" :key="op" :value="op">{{ op }}</option>
+      </select>
+      
+      <div class="input-container right" :class="{ 'has-block': rightBlock }">
+        <component
+          v-if="rightBlock"
+          :key="rightBlock.id"
+          :is="components[getBlockComponent(rightBlock.type)]"
+          :block="rightBlock"
+          :isInWorkspace="true"
+          @remove="removeRightBlock"
+          @update="updateRightBlock"
+          draggable="true"
+          @dragstart.stop="(event: DragEvent) => handleInputDragStart(event, 'right')"
+        />
+        <div v-else class="block-input" @drop.stop="handleInputDrop($event, 'right')" @dragover.prevent>
+          <input 
+            type="text" 
+            v-model="rightInput" 
+            placeholder="Right input"
+            @input="updateBlock"
+          >
+        </div>
+      </div>
     </div>
-  </template>
+
+    <!-- Toolbox Preview -->
+    <div v-else class="block-preview">
+      <span class="preview-text">{{ selectedOperator }} Comparison</span>
+    </div>
+
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
+  </div>
+</template>
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
@@ -185,11 +193,9 @@ export default defineComponent({
   }
 });
 </script>
-
 <style scoped>
-.logical-operator-block,
 .comparison-operator-block {
-  width: 250px; /* Fixed width */
+  width: 100%;
   padding: 10px;
   border-radius: 5px;
   cursor: move;
@@ -200,6 +206,15 @@ export default defineComponent({
   box-sizing: border-box;
 }
 
+.toolbox-preview {
+  padding: 5px 8px; /* Increased padding for more height */
+  display: inline-block;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+}
+
 .block-content {
   display: flex;
   align-items: center;
@@ -208,7 +223,7 @@ export default defineComponent({
 }
 
 .input-container {
-  width: 80px; /* Fixed width for input containers */
+  flex-grow: 1;
   min-height: 30px;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
@@ -220,7 +235,7 @@ export default defineComponent({
 }
 
 .input-container.has-block {
-  width: 80px; /* Keep the same width even when it has a block */
+  flex-grow: 1;
 }
 
 .block-input {
@@ -243,7 +258,7 @@ export default defineComponent({
 }
 
 select {
-  width: 60px; /* Fixed width for select */
+  flex-shrink: 0;
   padding: 5px;
   border: none;
   border-radius: 3px;
@@ -263,25 +278,14 @@ select {
   color: #ff0000;
 }
 
-/* Styles for nested blocks */
-.input-container .logical-operator-block,
-.input-container .comparison-operator-block {
-  width: 100%;
-  margin: 0;
+/* Toolbox Preview Styling */
+.block-preview {
+  text-align: center;
 }
 
-.input-container .block-content {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.input-container .input-container {
-  width: 100%;
-  margin: 5px 0;
-}
-
-.input-container select {
-  width: 100%;
-  margin: 5px 0;
+.preview-text {
+  font-size: 1em; /* Adjust text size */
+  font-weight: bold;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 </style>

@@ -1,12 +1,14 @@
 <template>
   <div
     class="block logical-operator-block"
+    :class="{ 'toolbox-preview': !isInWorkspace }"
     :style="{ backgroundColor: block.color }"
     draggable="true"
     @dragstart="onDragStart"
     @dragend="onDragEnd"
   >
-    <div class="block-content">
+    <div v-if="isInWorkspace" class="block-content">
+      <!-- Full block content for workspace -->
       <div class="input-container left" :class="{ 'has-block': leftBlock }">
         <component
           v-if="leftBlock"
@@ -45,6 +47,12 @@
         </div>
       </div>
     </div>
+
+    <!-- Toolbox Preview -->
+    <div v-else class="block-preview">
+      <span class="preview-text">{{ selectedOperator }} Logic</span>
+    </div>
+
     <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
   </div>
 </template>
@@ -67,7 +75,7 @@ export default defineComponent({
     },
     isNested: {
       type: Boolean,
-      default: false
+      default: false,
     },
   },
   emits: ['remove', 'update'],
@@ -85,7 +93,7 @@ export default defineComponent({
         ...props.block,
         operator: selectedOperator.value,
         leftBlock: leftBlock.value,
-        rightBlock: rightBlock.value
+        rightBlock: rightBlock.value,
       };
       emit('update', updatedBlock);
     };
@@ -111,26 +119,26 @@ export default defineComponent({
     };
 
     const handleInputDrop = (event: DragEvent, side: 'left' | 'right') => {
-  event.preventDefault();
-  event.stopPropagation();
-  if (event.dataTransfer) {
-    const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
-    if (allowedInputBlocks.includes(blockData.type)) {
-      const newBlock: Block = {
-        ...blockData,
-        id: Date.now().toString()
-      };
-      if (side === 'left') {
-        leftBlock.value = newBlock;
-      } else {
-        rightBlock.value = newBlock;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.dataTransfer) {
+        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as Block;
+        if (allowedInputBlocks.includes(blockData.type)) {
+          const newBlock: Block = {
+            ...blockData,
+            id: Date.now().toString(),
+          };
+          if (side === 'left') {
+            leftBlock.value = newBlock;
+          } else {
+            rightBlock.value = newBlock;
+          }
+          updateBlock();
+        } else {
+          console.log(`Block type ${blockData.type} is not allowed as input`);
+        }
       }
-      updateBlock();
-    } else {
-      console.log(`Block type ${blockData.type} is not allowed as input`);
-    }
-  }
-};
+    };
 
     const handleInputDragStart = (event: DragEvent, side: 'left' | 'right') => {
       const block = side === 'left' ? leftBlock.value : rightBlock.value;
@@ -152,11 +160,11 @@ export default defineComponent({
     };
 
     return {
+      components,
       operators,
       selectedOperator,
       leftBlock,
       rightBlock,
-      components,
       getBlockComponent,
       removeLeftBlock,
       removeRightBlock,
@@ -168,14 +176,13 @@ export default defineComponent({
       onDragEnd,
       updateBlock,
     };
-  }
+  },
 });
 </script>
 
 <style scoped>
-.logical-operator-block,
-.comparison-operator-block {
-  width: 250px; /* Fixed width */
+.logical-operator-block {
+  width: 100%;
   padding: 10px;
   border-radius: 5px;
   cursor: move;
@@ -186,6 +193,15 @@ export default defineComponent({
   box-sizing: border-box;
 }
 
+.toolbox-preview {
+  padding: 5px 8px; /* Increased padding for more height */
+  display: inline-block;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 3px;
+  box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.3);
+}
+
 .block-content {
   display: flex;
   align-items: center;
@@ -194,7 +210,7 @@ export default defineComponent({
 }
 
 .input-container {
-  width: 80px; /* Fixed width for input containers */
+  flex-grow: 1;
   min-height: 30px;
   border: 2px dashed rgba(255, 255, 255, 0.5);
   border-radius: 5px;
@@ -206,7 +222,7 @@ export default defineComponent({
 }
 
 .input-container.has-block {
-  width: 80px; /* Keep the same width even when it has a block */
+  flex-grow: 1;
 }
 
 .block-input {
@@ -215,7 +231,6 @@ export default defineComponent({
   align-items: center;
 }
 
-.block-input input,
 .block-input span {
   width: 100%;
   padding: 5px;
@@ -229,7 +244,7 @@ export default defineComponent({
 }
 
 select {
-  width: 60px; /* Fixed width for select */
+  flex-shrink: 0;
   padding: 5px;
   border: none;
   border-radius: 3px;
@@ -249,25 +264,14 @@ select {
   color: #ff0000;
 }
 
-/* Styles for nested blocks */
-.input-container .logical-operator-block,
-.input-container .comparison-operator-block {
-  width: 100%;
-  margin: 0;
+/* Toolbox Preview Styling */
+.block-preview {
+  text-align: center;
 }
 
-.input-container .block-content {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.input-container .input-container {
-  width: 100%;
-  margin: 5px 0;
-}
-
-.input-container select {
-  width: 100%;
-  margin: 5px 0;
+.preview-text {
+  font-size: 1em; /* Adjust text size */
+  font-weight: bold;
+  white-space: nowrap; /* Prevent text wrapping */
 }
 </style>
