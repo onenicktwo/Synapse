@@ -1,58 +1,34 @@
 <template>
   <div 
-    class="variable-change-block"
-    :class="{ 'in-toolbox': !isInWorkspace, 'in-workspace': isInWorkspace }"
+    class="variable-block"
     draggable="true"
-    @dragstart="handleDragStart"
+    @dragstart="onDragStart"
+    @dragend="onDragEnd"
   >
-    <!-- Toolbox preview -->
-    <div v-if="!isInWorkspace" class="toolbox-preview">
-      Change Variable...
-    </div>
-    
-    <!-- Workspace block -->
-    <div v-else class="block-container">
-      <div class="variable-title">Variable Change</div>
-      <select v-model="selectedVariableId" @change="updateVariable">
-        <option value="">Select a variable</option>
-        <option v-for="variable in availableVariables" :key="variable.id" :value="variable.id">
-          {{ variable.name }}: {{ variable.value }}
-        </option>
-      </select>
-      
-      <!-- Math Operator Container -->
-      <div class="math-operator-container" @drop.stop="handleMathOperatorDrop" @dragover.prevent>
-        <component
-          v-if="mathOperator"
-          :is="components.MathOperatorBlock"
-          :block="mathOperator"
-          :isInWorkspace="true"
-          :isNested="true"
-          @remove="removeMathOperator"
-          @update="updateMathOperator"
-        />
-        <div v-else class="math-operator-placeholder">
-          Drop Math Operator here
-        </div>
-      </div>
-      
-      <!-- Remove button -->
-      <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
-    </div>
+    <div class="variable-title">Variable Change</div>
+    <select v-model="selectedVariableId" @change="updateVariable">
+      <option value="">Select a variable</option>
+      <option v-for="variable in variables" :key="variable.id" :value="variable.id">
+        {{ variable.name }}: {{ variable.value }}
+      </option>
+    </select>
+    <input 
+      v-if="selectedVariableId" 
+      type="number" 
+      :value="selectedVariableValue" 
+      @input="updateVariableValue"
+    >
+    <button v-if="isInWorkspace" @click="$emit('remove')" class="remove-btn">X</button>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, computed, PropType } from 'vue';
 import { useStore } from 'vuex';
-import { VariableChangeBlock as VariableChangeBlockType, MathOperatorBlock as MathOperatorBlockType } from './types';
-import MathOperatorBlock from './MathOperatorBlock.vue';
+import { VariableChangeBlock as VariableChangeBlockType } from './types';
 
 export default defineComponent({
   name: 'VariableChangeBlock',
-  components: {
-    MathOperatorBlock,
-  },
   props: {
     block: {
       type: Object as PropType<VariableChangeBlockType>,
@@ -67,24 +43,15 @@ export default defineComponent({
   setup(props, { emit }) {
     const store = useStore();
     const selectedVariableId = ref(props.block.variableId || '');
-    const mathOperator = ref<MathOperatorBlockType | null>(props.block.mathOperator || null);
+    const selectedVariableValue = ref(props.block.value);
 
-    const availableVariables = computed(() => {
-      const storeVariables = store.getters['variables/getAllVariables'];
-      if (props.isInWorkspace && props.block.parentFunctionId) {
-        const parentFunction = store.getters['functions/getFunctionById'](props.block.parentFunctionId);
-        return parentFunction ? storeVariables.filter((v: any) => parentFunction.variableIds.includes(v.id)) : storeVariables;
-      }
-      return storeVariables;
-    });
-
-    const components = computed(() => ({ MathOperatorBlock }));
+    const variables = computed(() => store.getters['variables/getAllVariables']);
 
     const updateBlock = () => {
       const updatedBlock: VariableChangeBlockType = {
         ...props.block,
         variableId: selectedVariableId.value,
-        mathOperator: mathOperator.value
+        value: selectedVariableValue.value
       };
       emit('update', updatedBlock);
     };
@@ -93,96 +60,75 @@ export default defineComponent({
       updateBlock();
     };
 
-    const handleMathOperatorDrop = (event: DragEvent) => {
-      event.preventDefault();
+    const updateVariableValue = (event: Event) => {
+      const value = Number((event.target as HTMLInputElement).value);
+      if (!isNaN(value) && selectedVariableId.value) {
+        store.dispatch('variables/updateVariable', {
+          id: selectedVariableId.value,
+          name: store.getters['variables/getVariableById'](selectedVariableId.value).name,
+          value: value
+        });
+        selectedVariableValue.value = value;
+        updateBlock(); // Update the block after updating the variable
+      }
+    };
+
+    const onDragStart = (event: DragEvent) => {
       if (event.dataTransfer) {
-        const blockData = JSON.parse(event.dataTransfer.getData('text/plain')) as MathOperatorBlockType;
-        if (blockData.type === 'mathOperator') {
-          mathOperator.value = {
-            ...blockData,
-            id: Date.now().toString()
-          };
-          updateBlock();
-        }
+        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+        event.dataTransfer.effectAllowed = 'copy';
       }
     };
 
-    const removeMathOperator = () => {
-      mathOperator.value = null;
-      updateBlock();
-    };
-
-    const updateMathOperator = (updatedBlock: MathOperatorBlockType) => {
-      mathOperator.value = updatedBlock;
-      updateBlock();
-    };
-
-    const handleDragStart = (event: DragEvent) => {
-      if (!props.isInWorkspace) { // Only allow dragging from toolbox
-        if (event.dataTransfer) {
-          event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-          event.dataTransfer.effectAllowed = 'copy';
-        }
-      }
+    const onDragEnd = (event: DragEvent) => {
+      console.log('Drag ended at:', event.clientX, event.clientY);
     };
 
     return {
       selectedVariableId,
-      availableVariables,
-      mathOperator,
-      components,
+      variables,
+      selectedVariableValue,
       updateVariable,
-      handleMathOperatorDrop,
-      removeMathOperator,
-      updateMathOperator,
-      handleDragStart,
+      updateVariableValue,
+      onDragStart,
+      onDragEnd,
     };
-  }
+  },
 });
 </script>
 
 <style scoped>
-.variable-change-block {
-  display: inline-block;
+.variable-block {
+  width: 200px; /* Set a fixed width similar to PrintBlock */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #ff8c1a;
+  padding: 10px;
+  border-radius: 5px;
   cursor: move;
   position: relative;
   margin-bottom: 10px;
 }
 
-.in-toolbox,
-.block-container {
-  padding: 5px 10px;
-  border-radius: 5px;
-  background-color: lightblue;
-  color: #333;
-}
-
-.toolbox-preview {
-  font-weight: bold;
-}
-
 .variable-title {
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
-.math-operator-container {
-  display: flex;
-  align-items: center;
+.variable-block select,
+.variable-block input {
+  margin: 5px 0;
   padding: 5px;
-  border: 2px dashed rgba(0, 0, 0, 0.5);
-  border-radius: 5px;
-  margin-top: 5px;
-}
-
-.math-operator-placeholder {
-  color: rgba(0, 0, 0, 0.7);
-  font-style: italic;
-  text-align: center;
-  padding: 5px;
-  border: 1px dashed rgba(0, 0, 0, 0.5);
+  border: none;
   border-radius: 3px;
-  cursor: pointer;
+  background-color: #ffab5e;
+  color: white;
+}
+
+.variable-block select,
+.variable-block input {
+  width: 100%;
 }
 
 .remove-btn {
