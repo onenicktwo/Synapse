@@ -87,7 +87,7 @@
 
 <script lang="ts">
 import { defineComponent, PropType, ref } from 'vue';
-import { mapActions, mapGetters } from 'vuex';
+import { mapActions, mapGetters, } from 'vuex';
 import { 
   FunctionBlock as FunctionBlockType, 
   Block, 
@@ -117,113 +117,117 @@ export default defineComponent({
   },
   emits: ['remove', 'update'],
   setup(props) {
-    const functionName = ref(props.block.functionName || '');
-    const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
-    const parameters = ref<ParameterBlockType[]>(props.block.parameters || []);
-    const components = blockComponents;
-    const newParameterName = ref('');
-    const hasReturn = ref(props.block.hasReturn || false);
+  const functionName = ref(props.block.functionName || '');
+  const nestedBlocks = ref<Block[]>(props.block.nestedBlocks || []);
+  const parameters = ref<ParameterBlockType[]>(props.block.parameters || []);
+  const components = blockComponents;
+  const newParameterName = ref('');
+  const hasReturn = ref(props.block.hasReturn || false);
 
-    const onDragStart = (event: DragEvent) => {
-      if (event.dataTransfer) {
-        event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
-        event.dataTransfer.effectAllowed = 'copy';
-      }
-    };
-    
-    const handleParameterDragStart = (event: DragEvent, parameter: ParameterBlockType) => {
-      event.stopPropagation();
-      if (event.dataTransfer) {
-        event.dataTransfer.setData('text/plain', JSON.stringify(parameter));
-        event.dataTransfer.effectAllowed = 'move';
-      }
-    };
+  const onDragStart = (event: DragEvent) => {
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', JSON.stringify(props.block));
+      event.dataTransfer.effectAllowed = 'copy';
+    }
+  };
+  
+  const handleParameterDragStart = (event: DragEvent, parameter: ParameterBlockType) => {
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', JSON.stringify(parameter));
+      event.dataTransfer.effectAllowed = 'move';
+    }
+  };
 
-    const createEmptyReturnBlock = (): ReturnBlockType => ({
-      id: Date.now().toString(),
-      type: 'return',
-      label: 'Return',
-      color: '#FF4500',
-      inputs: [],
-      valueBlock: null
-    });
+  const createEmptyReturnBlock = (): ReturnBlockType => ({
+    id: Date.now().toString(),
+    type: 'return',
+    label: 'Return',
+    color: '#FF4500',
+    inputs: [],
+    valueBlock: null
+  });
 
-    const onReturnDragStart = (event: DragEvent) => {
-      event.stopPropagation();
-      if (event.dataTransfer) {
-        const newReturnBlock = createEmptyReturnBlock();
-        event.dataTransfer.setData('text/plain', JSON.stringify(newReturnBlock));
-        event.dataTransfer.effectAllowed = 'copy';
-      }
-    };
+  const onReturnDragStart = (event: DragEvent) => {
+    event.stopPropagation();
+    if (event.dataTransfer) {
+      const newReturnBlock = createEmptyReturnBlock();
+      event.dataTransfer.setData('text/plain', JSON.stringify(newReturnBlock));
+      event.dataTransfer.effectAllowed = 'copy';
+    }
+  };
 
-    return {
-      onDragStart,
-      functionName,
-      nestedBlocks,
-      components,
-      getBlockComponent,
-      handleParameterDragStart,
-      parameters, 
-      newParameterName,
-      hasReturn,
-      createEmptyReturnBlock,
-      onReturnDragStart,
-    };
-  },
+  return {
+    onDragStart,
+    functionName,
+    nestedBlocks,
+    components,
+    getBlockComponent,
+    handleParameterDragStart,
+    parameters, 
+    newParameterName,
+    hasReturn,
+    createEmptyReturnBlock,
+    onReturnDragStart,
+  };
+},
 
   computed: {
     ...mapGetters('functions', ['getFunctionByName']),
+    ...mapGetters('workspace', ['getActiveWorkspace'])
   },
 
   methods: {
-    ...mapActions('functions', ['addFunction', 'removeFunction', 'updateFunction']),
+  ...mapActions('functions', ['addFunction', 'removeFunction', 'updateFunction']),
+  
+  updateBlock() {
+    this.$emit('update', {
+      ...this.block,
+      functionName: this.functionName,
+      nestedBlocks: this.nestedBlocks,
+      parameters: this.parameters,
+      hasReturn: this.hasReturn,
+    });
     
-    updateBlock() {
-      this.$emit('update', {
-        ...this.block,
-        functionName: this.functionName,
-        nestedBlocks: this.nestedBlocks,
-        parameters: this.parameters,
-        hasReturn: this.hasReturn,
-      });
-      
-      this.updateOrCreateFunction();
-    },
+    this.updateOrCreateFunction();
+  },
 
-    updateOrCreateFunction() {
-      if (typeof this.functionName === 'string' && this.functionName !== '') {
-        const existingFunction = this.getFunctionByName(this.functionName);
-        if (existingFunction) {
-          this.updateFunction({
-            ...existingFunction,
-            nestedBlocks: this.nestedBlocks,
-            parameters: this.parameters,
-            hasReturn: this.hasReturn,
-          });
-        } else {
-          this.addFunction({
-            name: this.functionName,
-            nestedBlocks: this.nestedBlocks,
-            parameters: this.parameters,
-            hasReturn: this.hasReturn,
-          });
-        }
-      } else {
-        console.error('Function block has invalid name');
-      }
-    },
-
-    removeFunctionAndEmit() {
+  updateOrCreateFunction() {
+    const activeWorkspace = this.getActiveWorkspace;
+    if (typeof this.functionName === 'string' && this.functionName !== '' && activeWorkspace) {
       const existingFunction = this.getFunctionByName(this.functionName);
       if (existingFunction) {
-        this.removeFunction(existingFunction.id).then(() => {
-          this.$emit('remove');
+        this.updateFunction({
+          ...existingFunction,
+          nestedBlocks: this.nestedBlocks,
+          parameters: this.parameters,
+          hasReturn: this.hasReturn,
+          workspaceName: activeWorkspace
         });
       } else {
-        this.$emit('remove');
+        this.addFunction({
+          name: this.functionName,
+          nestedBlocks: this.nestedBlocks,
+          parameters: this.parameters,
+          hasReturn: this.hasReturn,
+          workspaceName: activeWorkspace
+        });
       }
-    },
+    } else {
+      console.error('Function block has invalid name or no active workspace');
+    }
+  },
+
+  removeFunctionAndEmit() {
+    const existingFunction = this.getFunctionByName(this.functionName);
+    if (existingFunction) {
+      this.removeFunction(existingFunction.id).then(() => {
+        this.$emit('remove');
+      });
+    } else {
+      this.$emit('remove');
+    }
+  },
 
     removeNestedBlock(id: string) {
       this.nestedBlocks = this.nestedBlocks.filter((block) => block.id !== id);
@@ -249,7 +253,8 @@ export default defineComponent({
         'repeat',
         'functionGetter',
         'parameter',
-        'variableChange'
+        'variableChange',
+        'classInstantiation'
       ];
       if (this.hasReturn) {
         allowedNestedBlocks.push('return');
@@ -318,22 +323,22 @@ export default defineComponent({
   },
 
   watch: {
-    functionName(newName, oldName) {
-      if (oldName && oldName !== newName) {
-        const existingFunction = this.getFunctionByName(oldName);
-        if (existingFunction) {
-          this.removeFunction(existingFunction.id);
-        }
+  functionName(newName, oldName) {
+    if (oldName && oldName !== newName) {
+      const existingFunction = this.getFunctionByName(oldName);
+      if (existingFunction) {
+        this.removeFunction(existingFunction.id);
       }
-      this.updateOrCreateFunction();
-    },
-  },
-
-  mounted() {
-    if (this.isInWorkspace && this.functionName) {
-      this.updateOrCreateFunction();
     }
+    this.updateOrCreateFunction();
   },
+},
+
+mounted() {
+  if (this.isInWorkspace && this.functionName) {
+    this.updateOrCreateFunction();
+  }
+},
 });
 </script>
 

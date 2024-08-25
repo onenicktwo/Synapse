@@ -7,6 +7,7 @@ export interface Function {
   name: string;
   nestedBlocks: Block[];
   parameters: ParameterBlock[];
+  workspaceName: string;
 }
 
 interface FunctionsState {
@@ -56,7 +57,9 @@ const getters = {
   getFunctionById: (state: FunctionsState) => (id: string): Function | undefined =>
     state.functions.find(f => f.id === id),
   getFunctionByName: (state: FunctionsState) => (name: string): Function | undefined =>
-    state.functions.find(f => f.name === name)
+    state.functions.find(f => f.name === name),
+  getFunctionsForWorkspace: (state: FunctionsState) => (workspaceName: string): Function[] =>
+    state.functions.filter(f => f.workspaceName === workspaceName)
 };
 
 export default {

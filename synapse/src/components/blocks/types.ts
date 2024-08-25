@@ -110,12 +110,20 @@ export interface ReturnBlock extends Block {
   valueBlock: Block | null;
 }
 
+export interface ClassInstantiationBlock extends Block {
+  type: 'classInstantiation';
+  inputs: [
+    { name: 'className'; type: 'string'; default: string },
+    { name: 'instanceName'; type: 'string'; default: string }
+  ];
+}
+
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 
-| 'variableChange' | 'function' | 'functionGetter' | 'parameter' | 'return';
+| 'variableChange' | 'function' | 'functionGetter' | 'parameter' | 'return' | 'classInstantiation';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
 | 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock' | 'FunctionBlock' | 'FunctionGetterBlock'
-| 'ParameterBlock' | 'ReturnBlock';
+| 'ParameterBlock' | 'ReturnBlock' | 'ClassInstantiationBlock';
 
 export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   print: 'PrintBlock',
@@ -131,6 +139,7 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   functionGetter: 'FunctionGetterBlock',
   parameter: 'ParameterBlock',
   return: 'ReturnBlock',
+  classInstantiation: 'ClassInstantiationBlock',
 };
 
 export const blockComponents: Record<BlockComponentName, Component> = {
@@ -148,4 +157,5 @@ export const blockComponents: Record<BlockComponentName, Component> = {
   FunctionGetterBlock: markRaw(require('./FunctionGetterBlock.vue').default),
   ParameterBlock: markRaw(require('./ParameterBlock.vue').default),
   ReturnBlock: markRaw(require('./ReturnBlock.vue').default),
+  ClassInstantiationBlock: markRaw(require('./ClassInstantiationBlock.vue').default)
 };

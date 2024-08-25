@@ -12,6 +12,7 @@ import {
   VariableChangeBlock,
   FunctionBlock,
   FunctionGetterBlock,
+  ClassInstantiationBlock,
 } from "./types";
 
 class JavaBlockInterpreter {
@@ -26,7 +27,6 @@ class JavaBlockInterpreter {
       this.javaCode = [`class ${workspaceName} {`];
       this.indentationLevel = 2;
 
-      // Set the active workspace to get its blocks
       store.dispatch('workspace/setActiveWorkspace', 
         store.state.workspace.workspaces.find((w: { name: any; }) => w.name === workspaceName)?.id
       );
@@ -39,7 +39,7 @@ class JavaBlockInterpreter {
 
       this.javaCode.push('}');
       allClassesCode = allClassesCode.concat(this.javaCode);
-      allClassesCode.push(''); // Add an empty line between classes
+      allClassesCode.push('');
     }
 
     return allClassesCode.join('\n');
@@ -65,10 +65,18 @@ class JavaBlockInterpreter {
         return this.generateFunctionBlockCode(block as FunctionBlock);
       case 'functionGetter':
         return this.generateFunctionGetterBlockCode(block as FunctionGetterBlock);
+      case 'classInstantiation':
+        return this.generateClassInstantiationBlockCode(block as ClassInstantiationBlock);
       default:
         console.warn(`Unexpected block type: ${block.type}`);
         break;
     }
+  }
+
+  private generateClassInstantiationBlockCode(block: ClassInstantiationBlock): void {
+    const className = this.evaluateInput(block.inputs[0]);
+    const instanceName = this.evaluateInput(block.inputs[1]);
+    this.addLine(`${className} ${instanceName} = new ${className}();`);
   }
 
   private generateFunctionGetterBlockCode(block: FunctionGetterBlock): void {

@@ -86,7 +86,16 @@ export default defineComponent({
   setup(props, { emit }) {
     const store = useStore();
     const selectedFunctionId = ref(props.block.functionId || '');
-    const functions = computed(() => store.getters['functions/getAllFunctions']);
+    
+    const activeWorkspace = computed(() => store.getters['workspace/getActiveWorkspace']);
+    
+    const functions = computed(() => {
+      if (activeWorkspace.value) {
+        return store.getters['functions/getFunctionsForWorkspace'](activeWorkspace.value);
+      }
+      return [];
+    });
+
     const parameterValues = ref<string[]>(props.block.parameterValues || []);
     const nestedBlocks = ref<(Block | null)[]>(props.block.nestedBlocks || []);
     const components = computed(() => blockComponents);

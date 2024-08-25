@@ -19,6 +19,24 @@ interface BlocksState {
 const state: BlocksState = {
   blocks: [
     {
+      id: 'classInstantiation',
+      type: 'classInstantiation',
+      label: 'Create Class Instance',
+      color: '#8A2BE2',
+      inputs: [
+        {
+          name: 'className',
+          type: 'string',
+          default: ''
+        },
+        {
+          name: 'instanceName',
+          type: 'string',
+          default: ''
+        }
+      ]
+    },
+    {
       id: 'return',
       type: 'return',
       label: 'Return',
