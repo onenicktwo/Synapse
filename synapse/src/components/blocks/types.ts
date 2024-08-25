@@ -74,14 +74,11 @@ export interface VariableBlock extends Block {
   variableId: string;
 }
 
-export interface VariableChangeBlock {
-  id: string;
-  type: 'variableChange';
-  variableId: string | null;
-  mathOperator: MathOperatorBlock | null;
-  parentFunctionId?: string; // Add this line
+export interface VariableChangeBlock extends Block {
+  type: 'variable';
+  variableId: string;
+  value: number;
 }
-
 
 export interface ParameterBlock extends Block {
   type: 'parameter';
@@ -118,12 +115,20 @@ export interface ClassInstantiationBlock extends Block {
   ];
 }
 
+export interface InvokeMethodBlock extends Block {
+  type: 'invokeMethod';
+  inputs: [
+    { name: 'instanceName'; type: 'string'; default: string },
+    { name: 'methodName'; type: 'string'; default: string }
+  ];
+}
+
 export type BlockType = 'print' | 'ifThen' | 'createVariable' | 'compareOperator' | 'compareLogic' | 'repeat' | 'variable' | 'mathOperator' 
-| 'variableChange' | 'function' | 'functionGetter' | 'parameter' | 'return' | 'classInstantiation';
+| 'variableChange' | 'function' | 'functionGetter' | 'parameter' | 'return' | 'classInstantiation' | 'invokeMethod';
 
 export type BlockComponentName = 'PrintBlock' | 'IfThenBlock' | 'CreateVariableBlock' | 'ComparisonOperatorBlock' | 'ComparisonLogicBlock' 
 | 'RepeatBlock' | 'UnknownBlock' | 'VariableBlock' | 'MathOperatorBlock' | 'VariableChangeBlock' | 'FunctionBlock' | 'FunctionGetterBlock'
-| 'ParameterBlock' | 'ReturnBlock' | 'ClassInstantiationBlock';
+| 'ParameterBlock' | 'ReturnBlock' | 'ClassInstantiationBlock' | 'InvokeMethodBlock';
 
 export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   print: 'PrintBlock',
@@ -140,6 +145,7 @@ export const BlockTypeToComponentName: Record<BlockType, BlockComponentName> = {
   parameter: 'ParameterBlock',
   return: 'ReturnBlock',
   classInstantiation: 'ClassInstantiationBlock',
+  invokeMethod: 'InvokeMethodBlock',
 };
 
 export const blockComponents: Record<BlockComponentName, Component> = {
@@ -157,5 +163,6 @@ export const blockComponents: Record<BlockComponentName, Component> = {
   FunctionGetterBlock: markRaw(require('./FunctionGetterBlock.vue').default),
   ParameterBlock: markRaw(require('./ParameterBlock.vue').default),
   ReturnBlock: markRaw(require('./ReturnBlock.vue').default),
-  ClassInstantiationBlock: markRaw(require('./ClassInstantiationBlock.vue').default)
+  ClassInstantiationBlock: markRaw(require('./ClassInstantiationBlock.vue').default),
+  InvokeMethodBlock: markRaw(require('./InvokeMethodBlock.vue').default)
 };

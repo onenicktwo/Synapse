@@ -90,7 +90,8 @@ export default defineComponent({
     const thenBlocks = ref<Block[]>(props.block.thenBlocks || []);
     const elseBlocks = ref<Block[]>(props.block.elseBlocks || []);
     
-    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'mathOperator', 'functionGetter', 'return'];
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'mathOperator', 'functionGetter', 'return', 
+    'classInstantiation', 'invokeMethod'];
     const allowedConditionBlocks = ['compareOperator', 'compareLogic', 'variable'];
 
     const updateBlock = () => {

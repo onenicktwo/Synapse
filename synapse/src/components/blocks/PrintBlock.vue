@@ -67,7 +67,7 @@ export default defineComponent({
     const inputValue = ref(props.block.inputs[0].default || '');
     const nestedBlock = ref<Block | null>(props.block.nestedBlock || null);
 
-    const allowedInputBlocks = ['variable', 'parameter', 'functionGetter'];
+    const allowedInputBlocks = ['variable', 'parameter', 'functionGetter', 'invokeMethod'];
 
     const updateBlock = () => {
       const updatedBlock: PrintBlockType = {

@@ -86,7 +86,8 @@ export default defineComponent({
     const nestedBlocksContainer = ref<HTMLElement | null>(null);
     const resizeObserver = ref<ResizeObserver | null>(null);
 
-    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'functionGetter', 'variableChange']; 
+    const allowedNestedBlocks = ['print', 'ifThen', 'createVariable', 'variable', 'repeat', 'functionGetter', 'variableChange', 
+    'classInstantiation', 'invokeMethod']; 
 
     onMounted(() => {
       if (nestedBlocksContainer.value) {

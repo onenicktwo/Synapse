@@ -19,6 +19,24 @@ interface BlocksState {
 const state: BlocksState = {
   blocks: [
     {
+      id: 'invokeMethod',
+      type: 'invokeMethod',
+      label: 'Invoke Method',
+      color: '#1E90FF', // Choose a color that fits your design
+      inputs: [
+        {
+          name: 'instanceName',
+          type: 'string',
+          default: ''
+        },
+        {
+          name: 'methodName',
+          type: 'string',
+          default: ''
+        }
+      ]
+    },
+    {
       id: 'classInstantiation',
       type: 'classInstantiation',
       label: 'Create Class Instance',

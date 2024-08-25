@@ -254,7 +254,8 @@ export default defineComponent({
         'functionGetter',
         'parameter',
         'variableChange',
-        'classInstantiation'
+        'classInstantiation',
+        'invokeMethod'
       ];
       if (this.hasReturn) {
         allowedNestedBlocks.push('return');
